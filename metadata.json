@@ -1,0 +1,6 @@
+{
+  "name": "异世界转生心理测试与命运之书",
+  "description": "基于经典二次元轻小说分支的异世界心理测试、多元宇宙分支终章与16种潜意识人格图鉴",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
