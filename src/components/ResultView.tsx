@@ -205,30 +205,6 @@ export const ResultView: React.FC<ResultViewProps> = ({
             <Quote className="w-4 h-4 shrink-0 mt-0.5 text-amber-500/60" />
             <span>{ending.epilogueQuote}</span>
           </div>
-
-          {/* Bystander Roast / Witness Section */}
-          {ending.bystanderRoast && (
-            <div className="mt-3 pt-3 border-t border-stone-800/80 bg-stone-900/50 rounded-xl p-3 sm:p-4 flex items-start gap-3">
-              <div className="p-2 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-400 shrink-0 mt-0.5">
-                <MessageSquare className="w-4 h-4" />
-              </div>
-              <div className="space-y-1.5 min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-xs font-bold text-stone-200">
-                    📢 现场目击者证言 · {ending.bystanderRoast.witness}
-                  </span>
-                  {ending.bystanderRoast.tag && (
-                    <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-stone-800 text-amber-400 border border-stone-700">
-                      {ending.bystanderRoast.tag}
-                    </span>
-                  )}
-                </div>
-                <p className="text-xs sm:text-sm text-stone-300/95 italic font-serif leading-relaxed">
-                  {ending.bystanderRoast.comment}
-                </p>
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Psychological Archetype & Reality Breakdown Grid */}
