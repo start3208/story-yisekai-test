@@ -62,12 +62,12 @@ export const Navbar: React.FC<NavbarProps> = ({
               onOpenGallery();
             }}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-stone-900/90 border border-stone-700 hover:border-amber-500/50 text-stone-200 hover:text-amber-300 text-xs font-medium transition-all shadow-sm active:scale-95"
-            title="查看26个异世界结局收集图鉴"
+            title="查看异世界命运图鉴与16种潜意识人格"
           >
             <BookOpen className="w-3.5 h-3.5 text-amber-400" />
             <span>图鉴</span>
             <span className="font-mono text-[11px] text-amber-400/90 bg-amber-950/60 px-1.5 py-0.2 rounded border border-amber-500/20">
-              {unlockedCount}/{totalEndings}
+              {unlockedCount} 篇已收录
             </span>
           </button>
 

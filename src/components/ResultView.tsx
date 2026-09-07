@@ -19,7 +19,6 @@ import {
   Zap,
   Award,
   Layers,
-  Quote,
   X,
   Coins,
   Feather,
@@ -93,6 +92,26 @@ export const ResultView: React.FC<ResultViewProps> = ({
       // ignore
     }
   }, [ending.id]);
+
+  // Modal ESC listener and scroll lock
+  useEffect(() => {
+    if (!showPosterModal) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setShowPosterModal(false);
+      }
+    };
+
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [showPosterModal]);
 
   const handleCopySummary = async () => {
     soundFx.playSelect();
@@ -197,14 +216,28 @@ export const ResultView: React.FC<ResultViewProps> = ({
             <span>【终章物语 · 你的异世界下半生】</span>
           </div>
 
-          <p className="text-sm sm:text-base text-stone-200 leading-relaxed indent-6 font-sans">
+          <div className="text-sm sm:text-base text-stone-200 leading-relaxed font-sans whitespace-pre-line space-y-3">
             {ending.storyText}
-          </p>
-
-          <div className="flex items-start gap-2 pt-2 text-amber-300/90 font-serif italic text-xs sm:text-sm border-t border-stone-900">
-            <Quote className="w-4 h-4 shrink-0 mt-0.5 text-amber-500/60" />
-            <span>{ending.epilogueQuote}</span>
           </div>
+
+          {/* Bystander Comedy Roast Quote (Unique Single Roast Block) */}
+          {ending.bystanderRoast && (
+            <div className="p-3.5 rounded-xl bg-stone-900/90 border border-amber-500/20 space-y-1.5 mt-4">
+              <div className="flex items-center justify-between text-xs">
+                <span className="flex items-center gap-1.5 font-bold text-amber-400">
+                  <MessageSquare className="w-3.5 h-3.5" />
+                  <span>【目击者现场锐评】</span>
+                  <span className="text-stone-400 font-normal">({ending.bystanderRoast.witness})</span>
+                </span>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30">
+                  #{ending.bystanderRoast.tag}
+                </span>
+              </div>
+              <p className="text-xs sm:text-sm text-stone-300 font-sans italic">
+                {ending.bystanderRoast.comment}
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Psychological Archetype & Reality Breakdown Grid */}
@@ -378,7 +411,12 @@ export const ResultView: React.FC<ResultViewProps> = ({
 
       {/* Share Poster Modal */}
       {showPosterModal && posterUrl && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-950/85 backdrop-blur-md animate-fade-in">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="poster-modal-title"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-950/85 backdrop-blur-md animate-fade-in"
+        >
           <div className="relative max-w-sm sm:max-w-md w-full bg-stone-900 border border-stone-800 rounded-2xl p-4 sm:p-6 shadow-2xl flex flex-col items-center space-y-4">
             <button
               onClick={() => setShowPosterModal(false)}
@@ -388,7 +426,7 @@ export const ResultView: React.FC<ResultViewProps> = ({
             </button>
 
             <div className="text-center space-y-1">
-              <h3 className="font-bold text-stone-100 text-base font-serif">
+              <h3 id="poster-modal-title" className="font-bold text-stone-100 text-base font-serif">
                 你的异世界命运海报已生成
               </h3>
               <p className="text-xs text-stone-400">

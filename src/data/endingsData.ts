@@ -11,6 +11,13 @@ import {
   UserSelections,
   BystanderRoast
 } from '../types';
+import { getCombinationById } from './combinations';
+import { HERO_CUSTOM_SCRIPTS, ScenarioScript } from './customScriptsHero';
+import { DEMON_KING_CUSTOM_SCRIPTS } from './customScriptsDemon';
+import { SAGE_CUSTOM_SCRIPTS } from './customScriptsSage';
+import { SAINT_CUSTOM_SCRIPTS } from './customScriptsSaint';
+import { getPeasantCustomScript } from './customScriptsPeasant';
+import { synthesizeRichStory, generateEpicBruteStory } from './storyEngine';
 
 // Human-readable labels
 const TRANSMIGRATION_NAMES: Record<TransmigrationId, string> = {
@@ -306,9 +313,9 @@ function generateBystanderRoast(
     switch (genreOrGoal) {
       case 'level_up':
         return {
-          witness: '新手村菜鸟冒险者小队',
-          comment: '“我们刚接了讨伐低级野猪的任务，就看到村头种菜的平民大叔随手一铁锹把灭世黑龙砸进了泥土里，还笑着问我们要不要蹭点龙肉和升级经验……我们当场给大爹跪下了好吗！”',
-          tag: '菜鸟小队当场跪下'
+          witness: '白金级冒险者公会前台招待员',
+          comment: '“这帮平民刚来登记的时候连皮甲都穿不起，天天一起摸爬滚打、互相挡刀。结果今天全员穿着自制九阶极品战甲回来交任务，顺手把公会最高悬赏的远古魔龙徽记拍在桌上……我们会长当时眼珠子差点掉在地上！”',
+          tag: '泥腿子小队逆袭'
         };
       case 'flex':
         return {
@@ -357,11 +364,13 @@ function generateBruteStory(trans: TransmigrationId, goal: BruteGoalId): EndingS
   const id = `${trans}_brute_${goal}`;
   const routeKey = `${TRANSMIGRATION_NAMES[trans]} × 纯粹劲大 × ${BRUTE_GOAL_NAMES[goal]}`;
 
-  let title = '';
-  let jpSubtitle = '';
+  const epicBrute = generateEpicBruteStory(trans, goal);
+  const title = epicBrute.title;
+  const jpSubtitle = epicBrute.jpSubtitle;
+  const storyText = epicBrute.storyText;
+  const epilogueQuote = epicBrute.epilogueQuote;
+
   let archetypeId: PersonalityArchetypeId = 'berserk_engine';
-  let storyText = '';
-  let epilogueQuote = '';
   let tags: string[] = ['纯物理蛮力', '一拳超人'];
   const bystanderRoast = generateBystanderRoast('brute', goal, 'brute_force');
   const stats: StatRadar = {
@@ -373,78 +382,50 @@ function generateBruteStory(trans: TransmigrationId, goal: BruteGoalId): EndingS
     wisdom: 30
   };
 
-  // Transmigration intro context
-  const transIntro = {
-    truck: '前世为了救小猫被泥头车物理创飞的你，灵魂中烙印下了对物理冲击动能的无上顿悟。',
-    overwork: '前世连上四十八小时大夜班猝死的你，受够了办公室政治，这辈子发誓只相信绝对的纯粹肉身蛮力。',
-    circle: '被强行绑架召唤到异界当工具人？你睁开眼的一刹那，便决定用拳头教会召唤者什么叫绑架代价。',
-    god_apology: '神明手滑搞死你后跪地赔罪，你当场索要了“力量无上限”的外挂，直接把神界实习生吓到虚脱。'
-  }[trans];
-
   switch (goal) {
     case 'ordinary':
-      title = `《${trans === 'overwork' ? '连轴转猝死社畜' : '转生异界'}的我只想种土豆：谁敢来吵直接一拳轰出外太空》`;
-      jpSubtitle = '筋肉で耕す異世界の土、うるさい勇者どもを一撃で成層圏へ';
       archetypeId = 'slacker_sage';
       tags = ['种田归隐', '一拳清场', '低欲望战神'];
       stats.chill = 95;
       stats.sanity = 85;
       stats.rebellion = 40;
       stats.wisdom = 50;
-      storyText = `${transIntro}来到边陲荒野后，你用小拇指随手刨出八百亩良田，开辟了自己的马铃薯庄园。不管是魔王军的先遣队还是王国派来征兵的皇家骑士团，只要敢踏进菜地半步打扰午休，你随手一记平A便能将他们掀飞八百里。如今整片大陆都流传着“千万别惹那个吃烤土豆的光头大叔”的恐怖传说，你终于达成了全天睡到自然醒的终极梦想。`;
-      epilogueQuote = '“只要拳头足够硬，这世上就没人能打扰我的午后养生红茶。”';
       break;
 
     case 'industrial':
-      title = `《徒手手搓蒸汽工业帝国的蛮力造物主：物理降维碾压魔导神话》`;
-      jpSubtitle = '万力と鋼鉄の神話、異世界に叩きつける蒸気革命';
       archetypeId = 'order_architect';
       tags = ['工业朋克', '大力出奇迹', '降维重构'];
       stats.chill = 20;
       stats.sanity = 80;
       stats.rebellion = 60;
       stats.wisdom = 90;
-      storyText = `${transIntro}面对异世界落后的生产力和贵族垄断的愚蠢魔法，你冷笑一声挽起袖子。没有高压锻造机？你双掌合十徒手挤压出千吨高纯度合金钢；没有蒸汽冲压机？你一拳砸下去就是完美的齿轮组与锅炉！短短三年，你建立的重工业铁路网贯穿全大陆，魔导大炮在你的洲际机械洪流面前被碾成废铁。神明看着冒着黑烟的钢铁巨城，颤抖着向你递交了文明转让协议。`;
-      epilogueQuote = '“神说要有光，而我说，给我十万匹马力的高压蒸汽机！”';
       break;
 
     case 'return_home':
-      title = `《嫌异世界太无聊？我对着空气轰出一拳，直接砸穿次元壁回家看番》`;
-      jpSubtitle = '次元を砕く一撃、俺はただ昨日のアニメの続きが見たいだけだ';
       archetypeId = 'lone_wolf';
       tags = ['碎空回归', '反套路', '终极独立'];
       stats.chill = 70;
       stats.sanity = 90;
       stats.rebellion = 85;
       stats.wisdom = 65;
-      storyText = `${transIntro}异界国王还在高台上声泪俱下地请求你讨伐魔王，你甚至连台词都懒得听完。你深吸一口气，将全大陆的动能汇聚于右拳，对着面前虚空一拳暴击！只听咔嚓一声脆响，空间如防弹玻璃般寸寸碎裂，露出了前世自家卧室的天花板和电脑屏幕。你提着未吃完的魔兽烤肉施施然跨回现实世界，留下整个神殿目瞪口呆的异界高层在空间裂缝前风中凌乱。`;
-      epilogueQuote = '“拯救异界不如回家赶死线，我新追的番今晚十点更新呢。”';
       break;
 
     case 'defeat_demon_king':
-      title = `《出门第一天朝着魔王城挥了一拳：全剧终，勇者小队当场集体失业》`;
-      jpSubtitle = '旅立ちの朝に放った拳風が魔王城を消滅させ、冒険は初日に終了した';
       archetypeId = 'chaotic_jester';
       tags = ['一拳通关', '速通达人', '降维打击'];
       stats.chill = 80;
       stats.sanity = 75;
       stats.rebellion = 55;
       stats.wisdom = 40;
-      storyText = `${transIntro}国王赐予你生锈铁剑，勇者小队的牧师和法师还在嫌弃你没有魔力。你站在王都城门前伸了个懒腰，对着三千公里外的魔王城坐标隔空轰出一记轻描淡写的直拳。刹那间，肉眼可见的白色音爆气浪犁开山峦大地，魔王城当场化作半径五十里的环形巨坑，正在开早会的魔王甚至没来得及说出遗言。整个王国陷入长达半小时的死寂，你转头问侍从：“悬赏金是微信还是现金？”`;
-      epilogueQuote = '“什么长途旅行、羁绊觉醒？能一招秒的局，多走一步都是对时间的不尊重。”';
       break;
 
     case 'destroy_all':
-      title = `《受够了虚伪与勾心斗角：一巴掌拍裂大陆架，让全员掀桌推倒重来》`;
-      jpSubtitle = '偽善に満ちた世界に鉄槌を、大陸ごと吹き飛ばす究極のリセット';
       archetypeId = 'dark_realist';
       tags = ['掀桌疯批', '毁灭旧秩序', '极致反骨'];
       stats.chill = 10;
       stats.sanity = 20;
       stats.rebellion = 100;
       stats.wisdom = 40;
-      storyText = `${transIntro}神殿口口声声为了苍生，暗地里却在贩卖人口；贵族高举正义旗帜，暗地里却将贫民当成活祭耗材。你看够了人性的丑陋与双标，眼中只剩冰冷的厌烦。你跃上万丈高空，蓄力一掌直接按在中央大陆的板块断裂带上！伴随轰鸣与熔岩喷涌，虚伪的神殿、腐朽的王权与残暴的魔王军一并沉入海底深渊。你在新建的海岛上翘着二郎腿吹着海风：“世界终于清静了。”`;
-      epilogueQuote = '“与其在垃圾桶里挑挑拣拣，不如一把火全烧了，世界需要一场彻底的大扫除。”';
       break;
   }
 
@@ -488,17 +469,35 @@ function generateStandardStory(
   const genreName = GENRE_NAMES[genre];
   const routeKey = `${transName} × ${cheatName} × ${identityName} × ${genreName}`;
 
+  // Check if a dedicated custom script exists
+  let customScript: ScenarioScript | null = null;
+  const scriptKey = `${cheat === 'defense' ? 'absolute_defense' : cheat === 'immortality' ? 'infinite_lifespan' : cheat}_${genre}`;
+
+  if (identity === 'hero') {
+    customScript = HERO_CUSTOM_SCRIPTS[scriptKey] || null;
+  } else if (identity === 'demon_king') {
+    customScript = DEMON_KING_CUSTOM_SCRIPTS[scriptKey] || null;
+  } else if (identity === 'sage') {
+    customScript = SAGE_CUSTOM_SCRIPTS[scriptKey] || null;
+  } else if (identity === 'saint') {
+    customScript = SAINT_CUSTOM_SCRIPTS[scriptKey] || null;
+  } else if (identity === 'peasant') {
+    const peasantCheat = cheat === 'defense' ? 'absolute_defense' : cheat === 'immortality' ? 'infinite_lifespan' : cheat;
+    customScript = getPeasantCustomScript(race || 'human', peasantCheat, genre, false);
+  }
+
   // 1. Determine Archetype
   const archetypeId = deriveArchetype(trans, cheat, identity, genre, race);
 
   // 2. Generate Title & Subtitle tailored to all 4/5 variables
-  const { title, jpSubtitle } = synthesizeTitle(trans, cheat, identity, genre, race);
+  const synthTitle = synthesizeTitle(trans, cheat, identity, genre, race);
+  const title = customScript ? customScript.title : synthTitle.title;
+  const jpSubtitle = customScript ? customScript.jpSubtitle : synthTitle.jpSubtitle;
 
-  // 3. Generate 3-Act bespoke story text
-  const storyText = synthesizeStoryText(trans, cheat, identity, genre, race);
-
-  // 4. Generate epilogue punchline quote
-  const epilogueQuote = synthesizeQuote(cheat, identity, genre);
+  // 3. Generate 3-Act bespoke rich story text (450+ chars, multi-act, full choice context)
+  const richStory = synthesizeRichStory(trans, cheat, identity, genre, race);
+  const storyText = richStory.storyText;
+  const epilogueQuote = richStory.epilogueQuote;
 
   // 5. Generate tags
   const tags = synthesizeTags(trans, cheat, identity, genre, race);
@@ -507,7 +506,7 @@ function generateStandardStory(
   const stats = synthesizeStats(trans, cheat, identity, genre);
 
   // 7. Generate Bystander Roast
-  const bystanderRoast = generateBystanderRoast(identity, genre, cheat, race);
+  const bystanderRoast = customScript ? customScript.bystanderRoast : generateBystanderRoast(identity, genre, cheat, race);
 
   return {
     id,
@@ -637,8 +636,8 @@ function synthesizeTitle(
         };
       case 'level_up':
         return {
-          title: `《${transLead}觉醒天命勇者：闭关极北之地三百年，${cheatLead}出山即是多元宇宙天花板》`,
-          jpSubtitle: '極限の修行を終えし英雄、神々の領域を超越し世界を統べる'
+          title: `《${transLead}觉醒天命勇者：带三个笨蛋挂件队友练级，${cheatLead}的我随手砸碎了九阶灭世骨龙》`,
+          jpSubtitle: 'ポンコツ仲間を率いるチート勇者、片手間でドラゴンの群れを粉砕育成する'
         };
       case 'daily':
         return {
@@ -672,8 +671,8 @@ function synthesizeTitle(
         };
       case 'level_up':
         return {
-          title: `《${transLead}身为最弱魔王？靠着${cheatLead}吞噬三千古神残魂，成为诸神噩梦的至高主宰》`,
-          jpSubtitle: '無限進化を遂げし深淵の王、全界の理を塗り替える絶対覇王'
+          title: `《${transLead}成为魔王带小弟升级：靠着${cheatLead}，硬把看门小骷髅培养成了十阶不死天尊！》`,
+          jpSubtitle: '雑魚兵を神魔に育て上げる魔王様、配下育成が楽しすぎて世界征服を忘れる'
         };
       case 'daily':
         return {
@@ -707,8 +706,8 @@ function synthesizeTitle(
         };
       case 'level_up':
         return {
-          title: `《${transLead}的求道贤者：${cheatLead}读遍大陆三万卷禁书秘典，以凡人之躯重构魔法世界代码》`,
-          jpSubtitle: '万象の真理を解き明かし、世界理を再構築する至高の賢者'
+          title: `《${transLead}的大贤者带徒弟升级：${cheatLead}的我随手挥散九阶风暴，徒弟背包全被神级装备塞爆了！》`,
+          jpSubtitle: '弟子育成が雑すぎる大賢者、経験値の雨で弟子たちが白目を剥く'
         };
       case 'daily':
         return {
@@ -742,8 +741,8 @@ function synthesizeTitle(
         };
       case 'level_up':
         return {
-          title: `《${transLead}觉醒降世圣女：${cheatLead}将神圣恩典升格万倍，举手投足间逆转生死、羽化登仙》`,
-          jpSubtitle: '神域の奇跡を具現化せし至高の乙女、全大陸の魂を照らす光'
+          title: `《${transLead}的圣女带骑士团练级：说好只在后排温和加血，${cheatLead}的我手滑把前线小怪全净化升天了！》`,
+          jpSubtitle: 'ヒーラーのはずなのに前線が消滅、護衛騎士団が仕事を見失う件'
         };
       case 'daily':
         return {
@@ -784,12 +783,12 @@ function synthesizeTitle(
       };
     case 'level_up':
       return {
-        title: `《${transLead}身为${raceLabel}默默耕耘八百年：${cheatLead}的我，出门随手一击砸翻了灭世恶龙》`,
-        jpSubtitle: '村人としてカンストした俺、クワの一振りで伝説の竜を粉砕する'
+        title: `《${transLead}身为${raceLabel}带泥腿子小队练级：手把手教伙伴搬砖刷怪，不小心全员混成了白金级大佬！》`,
+        jpSubtitle: '最弱の村人パーティーが泥臭く進化、気づけば大陸最強ギルドへ'
       };
     case 'daily':
       return {
-        title: `《${transLead}身为${raceLabel}的自在小日子：拥有${cheatLead}，在林中木屋做美食、酿果酒、看云卷云舒》`,
+        title: `《${transLead}身为${raceLabel}的自在小日子：靠着${cheatLead}，在林中木屋做美食、酿果酒、看云卷云舒》`,
         jpSubtitle: '英雄になんてならなくていい、最高に贅沢なスローライフ万歳'
       };
     case 'romance':
@@ -810,66 +809,7 @@ function synthesizeStoryText(
   genre: GenreId,
   race?: RaceId
 ): string {
-  const originPart = {
-    truck: '前世因为舍己救人迎向疾驰的泥头车，你的灵魂深处天然带有超凡的救赎意志与清醒觉悟。',
-    overwork: '作为前世连熬四十八小时赶项目猝死的极品社畜，你对任何形式的内卷、画大饼和道德绑架有着骨子里的免疫。',
-    circle: '好端端下楼买泡面却被魔法阵粗暴召唤，这趟强加在你身上的因果，注定无法用凡夫俗子的规矩将你束缚。',
-    god_apology: '凭借在神明跪地痛哭道歉时敲诈来的逆天恩赐，你从降临的第一秒起就站在了世界的因果律制高点。'
-  }[trans];
-
-  const cheatPart = {
-    immortality: '依靠【无尽寿命】这一最无解的维度外挂，时间成了你最慈悲也最残忍的武器。你根本不需要正面争斗，坐看王朝更迭、宿敌老死，三百年后你依然年轻如初，甚至能亲自去他们的陵园里喝茶。',
-    defense: '凭借绝对霸道的【绝对防御】，一切神魔禁咒和天基物理冲击打在你身上连一丝油皮都蹭不掉。站桩反伤的恐怖机制，让所有试图伤害你的人在绝望的刮痧中活活被反震得当场吐血。',
-    infinite_growth: '激活了如同宇宙奇点般的【无限成长】面板，你的每一次呼吸、每一次走步都在成倍翻涨属性。原本高不可攀的世界规则在你的数值膨胀面前形同虚设，举手投足间皆是维度崩塌。',
-    omniscience: '手握洞悉世间一切底层运行代码与全知视角的【无穷智慧】，世间所有阴谋阳谋、秘境机关和弱点在你眼里皆是透明的剧透。你随手拨弄的一颗棋子，都能在半年后引发全大陆势力的精准洗牌。'
-  }[cheat];
-
-  const racePeasantContext = race ? {
-    human: '作为血统最纯正的人类平民，',
-    elf: '身为流落民间的古老隐世纯血精灵，',
-    monster: '以看似人畜无害的小魔物幼崽/魔物之躯开局，',
-    non_living: '作为被附魔苏醒的无机物灵性人偶/远古兵装构装体，'
-  }[race] : '';
-
-  const resolutionPart: Record<string, string> = {
-    hero_flex: '你早已厌倦了站在聚光灯下的浮夸赞誉。戴上一顶普通的破旧兜帽，你以无名旅者的身份在大陆阴影中漫步。无论面对神殿的龌龊阴谋还是深渊的狂暴兽潮，你只是打着哈欠轻描淡写地伸出一指便全域碾压抹杀。留下全大陆各大王国疯狂追寻“那位一指灭天灾的神秘无双大人”，而你的副手骑士早已狂热迪化，你则在酒馆角落里惬意地抿着冰饮。',
-    hero_retired: '当盲目的队友嫌弃你“没有爆发伤害”将你逐出勇者小队时，你只是微微一笑优雅离队。三年后前队友在魔王军面前全线溃败、跪在你的庄园门口痛哭求救时，你已经在全大陆无数领民的跪拜下被奉为至尊护国神尊。',
-    hero_revenge: '面对王国的卸磨杀驴与教会的无情暗算，你彻底撕掉了救世主的面具。当黑化的你在神殿大理石台阶上一寸寸捏碎神圣权杖时，那群曾经高高在上的主教才明白，他们亲手将最仁慈的神明逼成了最冷酷的天灾。',
-    hero_level_up: '告别了不可靠的旧队伍，你与几位性格迥异却同样赤诚的伙伴结成了生死盟约。从不见天日的低阶地牢开始，你们在一次次负伤与配合中磨合战术，摸索出独一无二的战阵连锁。每一次升级都是实打实的血汗，每一张装备图纸都是你们共同攻克的勋章。当你们这支曾被所有人看扁的杂牌小队，最终以完美无瑕的连携一剑斩破深渊天灾时，整个大陆的冒险者公会为你们全员起立欢呼！',
-    hero_daily: '“魔王？谁爱打谁打去，今天阳光正好，我要去钓鱼。”你彻底无视了催命般的讨伐召集令，带上自己收养的猫咪在湖畔建起小木屋，把生活过成了全大陆最令人眼红的治愈轻小说。',
-    hero_romance: '谁说勇者和魔王注定只能你死我活？在无数次针锋相对的交锋中，你们看透了彼此坚强外表下的孤独与真诚。在世界尽头的白色灯塔下，你们立下永恒誓言，这场跨越阵营的爱恋成为了吟游诗人传唱千古的绝唱。',
-
-    demon_king_flex: '你本来只想在魔王宝座上当个安静的咸鱼，偶尔叹口气、随手翻翻闲书，身旁的深渊大公和魔将们却立刻神色剧变：“陛下此举必有毁灭人界的三千层深意！”他们全员疯狂脑补迪化，自动将你随手涂鸦的线条解读为吞并三大帝国的千古奇策。不到半年，三大帝国的皇冠全被他们自动打下来进贡到了你的床头，你看着堆积如山的臣服降书陷入了深深的沉思。',
-    demon_king_retired: '你假死卸任了令人头秃的魔王大位，隐姓埋名在人类王都隔壁开了一家温馨的手工面包房。奇怪的是，不仅每天有魔族大将悄悄排队买牛角包，连人类王国的圣骑士也成了你的忠实吃客。',
-    demon_king_revenge: '神殿将异端帽子扣在魔族头上数千年，如今你的归来就是旧秩序的终局。万千深渊魔能化作涤荡大地的暴风雨，伪善的贵族在王座下颤抖求饶，世间真正的公平与法则由你亲手重铸。',
-    demon_king_level_up: '一人独强不过是匹夫之勇，你深谙统御与养成的至高奥义。你不仅赐名唤醒了麾下魔物们的远古始祖血统，更把前世的现代化管理与工业化训练引入深渊。曾经胆小卑微的哥布林被训练成骁勇军团，呆萌的骷髅兵觉醒成了不朽死灵元帅。在全员协同进化与领地欣欣向荣的发展中，整座深渊被你打造成繁荣昌盛的至高魔国，全员飞升的魔界大军让神殿连直视的勇气都彻底丧失。',
-    demon_king_daily: '魔王城里装满了你发明的自动恒温温泉和魔法全息投影仪。面对风尘仆仆闯进来的勇者小队，你甚至递过去一听冰镇魔药：“打了三天累了吧？先泡个澡吃点炸鸡，打架的事情明天再说。”',
-    demon_king_romance: '面对一次次被打倒却又一次次红着脸爬起来的倔强勇者，你终于放下了手中的毁灭魔杖。在漫天魔晶绽放的烟花下，不可一世的魔王牵起了勇者的手，给整片大陆的战争画上了一个甜度超标的句号。',
-
-    sage_flex: '你随意撕下一张用来擦茶渍的草稿纸扔在路边，上面不过随手写了半行因果律微分方程。结果帝国皇家学院的三百名首席大魔导师围着这张纸通宵研究了整整三个月，如获至宝般抱头痛哭，当场推翻了流传万年的古典魔法体系。当他们终于查明这竟出自一位在巷口晒太阳的普通学者之手时，全院学阀浩浩荡荡跨越万里，跪在你的门前高呼祖师。',
-    sage_retired: '看透了皇家魔法学院里拉帮结派的丑陋官僚风气，你挥一挥衣袖递交辞呈。如今你在迷雾森林深处的炼金木屋里，一边喝着全自动魔导茶壶沏出的红茶，一边听着森林小动物讲八卦，快意至极。',
-    sage_revenge: '他们以为你只是个手无缚鸡之力的老实学者，直到你用真理矩阵逆转了全城神圣结界。曾经构陷你的学阀与政客在自己设计的机关中自食恶果，而你早已跨过焦土，走向更高的真理之巅。',
-    sage_level_up: '你厌恶固步自封的学阀壁垒，毅然创办了向所有人开放的真理学堂。你打破禁锢，将高深晦涩的位面法则拆解成系统的进阶导引，悉心栽培来自五湖四海的年轻法师与平民学徒。在你的循循善诱与理念滋养下，门下学徒接连突破境界，诞生了数以百计的传奇魔导士与炼金宗师。整片大陆的魔法文明因你们整个学派的群星璀璨，迎来了万年来最恢弘的真理黄金时代。',
-    sage_daily: '在学院幽静的小巷里，你经营着全城最神秘的旧书杂货铺。偶尔指点一个路过的迷茫学徒，随手改良一下隔壁大娘的面包发酵咒，生活惬意悠闲，深藏功与名。',
-    sage_romance: '在漫长冰冷的求知旅途中，那个始终默默提灯走在你身侧的人，终于融化了你理智至极的心防。在真理与星辰的见证下，两个孤独的灵魂紧紧依偎，在永恒的长河中找到了彼此的归宿。',
-
-    saint_flex: '你其实根本没想大张旗鼓显圣，只是觉得神殿的赞歌太枯燥随口哼了两句调子。然而天穹之上的九道祥云竟随之汇聚成七彩神光，枯萎的万顷荒原瞬息化为繁花圣境！教皇和近卫神圣骑士团吓得集体伏地叩拜，万民狂热高呼“至高天神降世”。你茫然地眨了眨眼，默默收起刚吃完的麦芽糖，心中暗叹：“这就是绝对恩典的烦恼吗？”',
-    saint_retired: '“圣女就该为了信徒流尽最后一滴血？”去他的道德绑架！你摘下沉重的神圣冠冕，换上轻便的冒险家风衣跳出神殿高墙。现在的你在无垠的原野上自由奔跑，迎着晚霞喝麦酒，灵魂从未如此轻盈。',
-    saint_revenge: '神殿高层以圣光之名掩盖暗地里的罪恶交易，当你从神坛上缓缓拔出被黑炎缠绕的审判之剑时，虚伪的信徒被吓得肝胆俱裂。你降下涤荡罪愆的天火，亲手击碎了那个吃人的伪神雕像。',
-    saint_level_up: '你脱下了象征温室金丝雀的神圣羽衣，与前线的平民游侠、重盾战士组成战地救护小队。在一次次生离死别的战场磨砺中，你从只能微弱止血的见习治疗者，逐步掌握了攻防一体的治愈战技与守护战阵。在互为后背的血火淬炼中，你的团队全员突破进阶，而你也蜕变为披坚执锐、能于万军丛中护佑一切同伴的圣光战神。',
-    saint_daily: '在宁静修道院的后院里，你把神圣奇迹全部用在了培育高产小番茄和逗弄白鸽上。没有烦人的贵族拜访，没有虚伪的讲经仪式，阳光洒在身上暖洋洋的，这就是最纯粹的人间天堂。',
-    saint_romance: '原本应该水火不容的圣光与暗影，却在命运的丝线下缠绕成最深沉的羁绊。你拉着被神殿通缉的少年/少女的手奔向远方，任凭身后狂风呼啸，只要对视一眼，心中便装满了整片星空。',
-
-    peasant_flex: `${racePeasantContext}谁能想到一个守在新手村口不起眼的看门人，才是整片大陆最大的隐藏天花板？你漫不经心地随手弹飞一枚小石子，便将肆虐边境的S级凶兽直接按进地心摩擦。路过的S级公会会长当场扑通给跪，赶来讨伐的前任勇者更是怀疑人生：“这特么叫平民？！这分明是创世神在微服私访啊！”`,
-    peasant_retired: `${racePeasantContext}新手村平民又怎样？前队友嘲笑你毫无存在感，却不知整个王国的粮食供应、魔药商会甚至帝国银行的幕后大股东全是你。当他们为了几个铜板拼死拼活时，你正在自家奢华庄园里数金币数到手抽筋。`,
-    peasant_revenge: `${racePeasantContext}贪婪的贵族摧毁了你世代居住的宁静家园，他们以为踩死一只蝼蚁无足轻重。但当他们引以为傲的私立军团被你以绝对实力连根拔起、公爵府在大火中轰然倒塌时，他们才明白惹怒一个深藏不露的平民是何等绝望。`,
-    peasant_level_up: `${racePeasantContext}没有任何神圣血统与王室背景，你和几个同样来自贫民窟的伙伴从捕捉最低级的野兔和史莱姆开始练起。挨过饿、受过伤，你们在每一次任务后总结战术，把最基础的挥击与闪避练成肌肉记忆。五年寒来暑往，你们靠着彼此毫无保留的信任与无数次生死边缘的突破，全员杀入了大陆仅有几支的白金级冒险团之列，书写了底层平民逆天改命的最高传奇！`,
-    peasant_daily: `${racePeasantContext}种几亩灵果，养两头肥羊，酿一窖桂花蜜酒。你靠着过人的手艺和怡然自得的心态，把异世界的普通生活过成了无数贵族和勇者做梦都想拥有的世外桃源。`,
-    peasant_romance: `${racePeasantContext}谁能想到在自家后山菜园里捡到的失忆落难少女，竟然是全大陆最强帝国的至尊皇女？在日出而作、日落而息的平凡烟火气中，两颗心紧紧相扣，谱写了一段羡煞旁人的田园浪漫恋曲。`
-  };
-
-  const currentResolution = resolutionPart[`${identity}_${genre}`] || resolutionPart.hero_retired;
-  return `${originPart} ${cheatPart} ${currentResolution}`;
+  return synthesizeRichStory(trans, cheat, identity, genre, race).storyText;
 }
 
 function synthesizeQuote(cheat: CheatId, identity: IdentityId, genre: GenreId): string {
@@ -889,10 +829,19 @@ function synthesizeQuote(cheat: CheatId, identity: IdentityId, genre: GenreId): 
     return '“退队保平安，退群得永生。你们继续为了虚名内卷，我先去享受退休人生了。”';
   }
   if (genre === 'level_up') {
-    if (identity === 'demon_king' || identity === 'sage') {
-      return '“一人登顶终究孤独，带领大家一同打破上限、见证顶峰的风景，才是进化的真正意义。”';
+    if (identity === 'hero') {
+      return '“本来自己满级就挺无聊的，顺手带几个笨蛋队友练级，怎么全员都把我当神仙供起来了？”';
     }
-    return '“没有谁天生就是强者。每一次负伤流血、每一次与伙伴彼此托付，都是我们蜕变成长的阶梯。”';
+    if (identity === 'demon_king') {
+      return '“带领手下一起进化才叫王道。你看，当初那个看大门的小骷髅，现在连神明见了都要叫前辈。”';
+    }
+    if (identity === 'sage') {
+      return '“我只是稍微教了他们两句基础真理，谁知道他们全员把背包里的神级装备当白菜捡。”';
+    }
+    if (identity === 'saint') {
+      return '“说好我只在后排温和奶一口，手滑把怪物全净化升天、队友当场升阶，真的只是意外事故！”';
+    }
+    return '“没有谁天生就是天花板，我们泥腿子抱团练级，靠的就是一手毫无保留的彼此托付！”';
   }
   return '“命运将我带向异界，而我用自己的意志，把它雕刻成了最惬意的模样。”';
 }
@@ -1106,42 +1055,18 @@ export function getRepresentativeEndings(): EndingStory[] {
 
 /**
  * Reconstructs an EndingStory from its deterministic ID string.
+ * Uses exact O(1) 788-combination registry, with legacy fallback.
  */
 export function getEndingById(id: string): EndingStory | null {
   if (!id) return null;
-  const parts = id.split('_');
 
-  // Case 1: Brute force ending (e.g. truck_brute_ordinary)
-  if (parts.length === 3 && parts[1] === 'brute') {
-    return resolveEnding({
-      transmigration: parts[0] as TransmigrationId,
-      cheat: 'brute_force',
-      bruteGoal: parts[2] as BruteGoalId
-    });
+  // 1. Direct registry lookup (handles all 788 combinations perfectly without brittle string splitting)
+  const combo = getCombinationById(id);
+  if (combo) {
+    return resolveEnding(combo.selections);
   }
 
-  // Case 2: Peasant with race (5 parts, e.g. truck_defense_peasant_elf_retired)
-  if (parts.length === 5 && parts[2] === 'peasant') {
-    return resolveEnding({
-      transmigration: parts[0] as TransmigrationId,
-      cheat: parts[1] as CheatId,
-      identity: 'peasant',
-      race: parts[3] as RaceId,
-      genre: parts[4] as GenreId
-    });
-  }
-
-  // Case 3: Standard 4-part ending (e.g. overwork_defense_hero_retired)
-  if (parts.length === 4) {
-    return resolveEnding({
-      transmigration: parts[0] as TransmigrationId,
-      cheat: parts[1] as CheatId,
-      identity: parts[2] as IdentityId,
-      genre: parts[3] as GenreId
-    });
-  }
-
-  // Case 4: Legacy compatibility fallback
+  // 2. Legacy fallback for old test saves
   if (id.startsWith('brute_')) {
     const goal = id.replace('brute_', '') as BruteGoalId;
     return resolveEnding({
@@ -1151,7 +1076,7 @@ export function getEndingById(id: string): EndingStory | null {
     });
   }
 
-  // Legacy format e.g. "hero_retired"
+  const parts = id.split('_');
   if (parts.length === 2) {
     return resolveEnding({
       transmigration: 'truck',

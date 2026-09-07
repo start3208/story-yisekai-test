@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   X,
   Lock,
@@ -68,6 +68,26 @@ export const GalleryModal: React.FC<GalleryModalProps> = ({
   const [selectedCategory, setSelectedCategory] = useState<string>('全部');
   const [selectedArchetypeDetail, setSelectedArchetypeDetail] = useState<PersonalityArchetype | null>(null);
 
+  // Keyboard Escape listener & body scroll lock
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   // 1. Calculate unlocked stories
@@ -109,7 +129,12 @@ export const GalleryModal: React.FC<GalleryModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-stone-950/85 backdrop-blur-md animate-fade-in">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="gallery-modal-title"
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-stone-950/85 backdrop-blur-md animate-fade-in"
+    >
       <div className="relative w-full max-w-5xl max-h-[92vh] bg-stone-900 border border-stone-800 rounded-3xl shadow-2xl flex flex-col overflow-hidden">
         {/* Modal Top Header */}
         <div className="p-4 sm:p-6 border-b border-stone-800 bg-stone-950/70 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -119,7 +144,7 @@ export const GalleryModal: React.FC<GalleryModalProps> = ({
             </div>
             <div>
               <div className="flex flex-wrap items-center gap-2">
-                <h2 className="text-lg sm:text-xl font-bold font-serif text-stone-100">
+                <h2 id="gallery-modal-title" className="text-lg sm:text-xl font-bold font-serif text-stone-100">
                   异世界命运之书 · 图鉴档案馆
                 </h2>
                 <span className="px-2.5 py-0.5 text-xs font-mono font-bold rounded-full bg-amber-500/10 text-amber-300 border border-amber-500/25">

@@ -194,7 +194,7 @@ export async function generateSharePoster(
   ctx.textAlign = 'center';
   ctx.fillStyle = '#57534e';
   ctx.font = '12px sans-serif';
-  ctx.fillText('长按或右键保存你的异世界命运证书 · 扫码即可转生', width / 2, 1010);
+  ctx.fillText('长按或右键保存你的异世界命运证书 · 测测你的转生异界物语', width / 2, 1010);
 
   return canvas.toDataURL('image/png');
 }
