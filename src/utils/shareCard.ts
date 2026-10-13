@@ -11,6 +11,8 @@ export async function generateSharePoster(
   archetype: PersonalityArchetype
 ): Promise<string> {
   const width = 800;
+  const exportScale = 2;
+  await document.fonts.ready;
   
   // Use a temporary offscreen canvas for preliminary text measurement and layout budgeting
   const measureCanvas = document.createElement('canvas');
@@ -24,7 +26,11 @@ export async function generateSharePoster(
   const fontStory = '14px system-ui, -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif';
   const fontQuote = 'italic bold 15px "Noto Serif SC", "Source Han Serif SC", "Songti SC", serif, sans-serif';
   const fontRoast = 'italic 13px system-ui, -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif';
+  const fontWitness = '12px system-ui, -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif';
+  const fontRoastTag = '11px system-ui, -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif';
   const fontPersona = '13px system-ui, -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif';
+  const fontInfoHeading = 'bold 13px system-ui, -apple-system, sans-serif';
+  const fontAffinity = '12px system-ui, -apple-system, sans-serif';
 
   // 1. Measure Title
   mCtx.font = fontTitle;
@@ -36,22 +42,34 @@ export async function generateSharePoster(
 
   // 3. Measure Epilogue quote
   mCtx.font = fontQuote;
-  const quoteLines = wrapText(mCtx, `“${ending.epilogueQuote.replace(/^[“”"「」]/, '').replace(/[“”"「」]$/, '')}”`, width - 160);
+  const quoteLines = wrapText(mCtx, `“${ending.epilogueQuote.replace(/^[“”"「」]/, '').replace(/[“”"「」]$/, '')}”`, width - 176);
 
   // 4. Measure Bystander Roast (if present)
   let roastLines: string[] = [];
+  let witnessLines: string[] = [];
+  let roastTagLines: string[] = [];
   if (ending.bystanderRoast && ending.bystanderRoast.comment) {
+    mCtx.font = fontWitness;
+    witnessLines = wrapText(mCtx, `目击者：${ending.bystanderRoast.witness}`, width - 144);
     mCtx.font = fontRoast;
-    roastLines = wrapText(mCtx, `“${ending.bystanderRoast.comment.replace(/^[“”"「」]/, '').replace(/[“”"「」]$/, '')}”`, width - 160);
+    roastLines = wrapText(mCtx, `“${ending.bystanderRoast.comment.replace(/^[“”"「」]/, '').replace(/[“”"「」]$/, '')}”`, width - 144);
+    mCtx.font = fontRoastTag;
+    const tag = ending.bystanderRoast.tag?.trim();
+    roastTagLines = tag ? wrapText(mCtx, tag.startsWith('#') ? tag : `#${tag}`, width - 144) : [];
   }
 
   // 5. Measure Workplace Persona & Skill description
+  const infoX = 345;
+  const rightColWidth = width - infoX - 72;
+  mCtx.font = fontInfoHeading;
+  const personaHeadingLines = wrapText(mCtx, '⚡ 现实生活 / 职场生态位：', rightColWidth);
+  const skillHeadingLines = wrapText(mCtx, `✨ 专属特技：${archetype.passiveSkill.name}`, rightColWidth);
   mCtx.font = fontPersona;
-  const rightColWidth = 380;
   const personaLines = wrapText(mCtx, archetype.workplacePersona, rightColWidth);
   const skillLines = wrapText(mCtx, archetype.passiveSkill.desc, rightColWidth);
   const partnerLine = `🤝 灵魂搭档：${archetype.bestPartner.role}`;
   const nemesisLine = `⚔️ 天生克星：${archetype.nemesis.role}`;
+  mCtx.font = fontAffinity;
   const partnerLines = wrapText(mCtx, partnerLine, rightColWidth);
   const nemesisLines = wrapText(mCtx, nemesisLine, rightColWidth);
 
@@ -71,22 +89,24 @@ export async function generateSharePoster(
   // Roast Box (if present):
   let roastBoxHeight = 0;
   if (ending.bystanderRoast && roastLines.length > 0) {
-    roastBoxHeight = 28 + roastLines.length * 20 + 20;
+    roastBoxHeight = 38 + witnessLines.length * 18 + 8 + roastLines.length * 20 +
+      (roastTagLines.length > 0 ? 8 + roastTagLines.length * 16 : 0) + 12;
   }
 
   // Radar + Diagnostic Block:
   // Right side lines count:
   const rightSideHeight =
-    22 + // header
+    18 +
+    personaHeadingLines.length * 20 +
     personaLines.length * 19 +
-    12 +
-    20 + // skill header
+    10 +
+    skillHeadingLines.length * 20 +
     skillLines.length * 18 +
-    12 +
+    10 +
     partnerLines.length * 18 +
     nemesisLines.length * 18 +
     16;
-  const bottomSectionHeight = Math.max(220, rightSideHeight);
+  const bottomSectionHeight = Math.max(244, rightSideHeight);
 
   // Footer section:
   const footerHeight = 85;
@@ -114,10 +134,11 @@ export async function generateSharePoster(
 
   // Now create the final high-res canvas
   const canvas = document.createElement('canvas');
-  canvas.width = width;
-  canvas.height = height;
+  canvas.width = width * exportScale;
+  canvas.height = height * exportScale;
   const ctx = canvas.getContext('2d');
   if (!ctx) throw new Error('Canvas not supported');
+  ctx.scale(exportScale, exportScale);
 
   // Enable crisp text rendering
   ctx.imageSmoothingEnabled = true;
@@ -317,25 +338,37 @@ export async function generateSharePoster(
     ctx.fill();
     ctx.stroke();
 
-    // Witness Header & Tag
+    // Keep the heading, witness, comment and tags on separate measured rows.
     ctx.fillStyle = '#fbbf24';
     ctx.font = 'bold 12px system-ui, -apple-system, sans-serif';
-    ctx.fillText(`💬 【目击者现场锐评】 (${ending.bystanderRoast.witness})`, 72, roastBoxY + 20);
+    ctx.fillText('💬 【目击者现场锐评】', 72, roastBoxY + 22);
 
-    ctx.textAlign = 'right';
-    ctx.fillStyle = '#f59e0b';
-    ctx.font = '11px system-ui, -apple-system, sans-serif';
-    ctx.fillText(ending.bystanderRoast.tag, width - 72, roastBoxY + 20);
-    ctx.textAlign = 'left';
+    ctx.fillStyle = '#a8a29e';
+    ctx.font = fontWitness;
+    let rY = roastBoxY + 40;
+    witnessLines.forEach((line) => {
+      ctx.fillText(line, 72, rY);
+      rY += 18;
+    });
+    rY += 8;
 
     // Roast Comment text
     ctx.fillStyle = '#d6d3d1';
     ctx.font = fontRoast;
-    let rY = roastBoxY + 42;
     roastLines.forEach((line) => {
       ctx.fillText(line, 72, rY);
       rY += 20;
     });
+
+    if (roastTagLines.length > 0) {
+      rY += 8;
+      ctx.fillStyle = '#f59e0b';
+      ctx.font = fontRoastTag;
+      roastTagLines.forEach((line) => {
+        ctx.fillText(line, 72, rY);
+        rY += 16;
+      });
+    }
 
     currentY = roastBoxY + roastBoxHeight + gapAfterRoast;
   }
@@ -343,7 +376,7 @@ export async function generateSharePoster(
   // 8. Stats Radar & Personality Diagnosis (Bottom section)
   const bottomY = currentY;
   const radarCenterX = 185;
-  const radarCenterY = bottomY + bottomSectionHeight / 2 - 5;
+  const radarCenterY = bottomY + 132;
   const radarRadius = 72;
 
   // Radar title
@@ -354,17 +387,20 @@ export async function generateSharePoster(
   ctx.textAlign = 'left';
 
   // Draw Radar Chart
-  drawMiniRadar(ctx, radarCenterX, radarCenterY + 10, radarRadius, ending.stats, archetype.color);
+  drawMiniRadar(ctx, radarCenterX, radarCenterY, radarRadius, ending.stats, archetype.color);
 
   // Right Side: Diagnostic insights & skills
-  const infoX = 345;
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'alphabetic';
   let infoY = bottomY + 18;
 
   // Reality persona
   ctx.fillStyle = '#fbbf24';
-  ctx.font = 'bold 13px system-ui, -apple-system, sans-serif';
-  ctx.fillText('⚡ 现实生活 / 职场生态位：', infoX, infoY);
-  infoY += 20;
+  ctx.font = fontInfoHeading;
+  personaHeadingLines.forEach((line) => {
+    ctx.fillText(line, infoX, infoY);
+    infoY += 20;
+  });
 
   ctx.fillStyle = '#d6d3d1';
   ctx.font = fontPersona;
@@ -377,9 +413,11 @@ export async function generateSharePoster(
 
   // Passive skill
   ctx.fillStyle = '#38bdf8';
-  ctx.font = 'bold 13px system-ui, -apple-system, sans-serif';
-  ctx.fillText(`✨ 专属特技：${archetype.passiveSkill.name}`, infoX, infoY);
-  infoY += 20;
+  ctx.font = fontInfoHeading;
+  skillHeadingLines.forEach((line) => {
+    ctx.fillText(line, infoX, infoY);
+    infoY += 20;
+  });
 
   ctx.fillStyle = '#a8a29e';
   ctx.font = fontPersona;
@@ -392,7 +430,7 @@ export async function generateSharePoster(
 
   // Affinity (Soul Partner & Nemesis)
   ctx.fillStyle = '#a7f3d0';
-  ctx.font = '12px system-ui, -apple-system, sans-serif';
+  ctx.font = fontAffinity;
   partnerLines.forEach((line) => {
     ctx.fillText(line, infoX, infoY);
     infoY += 18;
@@ -405,7 +443,7 @@ export async function generateSharePoster(
   });
 
   // 9. Footer Seal & Watermark
-  const footerLineY = height - 76;
+  const footerLineY = height - 102;
   ctx.strokeStyle = '#44403c88';
   ctx.beginPath();
   ctx.moveTo(56, footerLineY);
@@ -445,11 +483,10 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, maxWidth: number)
     if (!trimmed) continue;
     let currentLine = '';
 
-    for (let i = 0; i < trimmed.length; i++) {
-      const char = trimmed[i];
+    for (const char of trimmed) {
       const testLine = currentLine + char;
       const metrics = ctx.measureText(testLine);
-      if (metrics.width > maxWidth && i > 0) {
+      if (metrics.width > maxWidth && currentLine) {
         lines.push(currentLine);
         currentLine = char;
       } else {
@@ -471,6 +508,7 @@ function drawMiniRadar(
   stats: StatRadar,
   accentColor: string
 ) {
+  ctx.save();
   const axes = [
     { label: '战力', val: stats.power },
     { label: '摸鱼', val: stats.chill },
@@ -545,5 +583,6 @@ function drawMiniRadar(
     ctx.arc(x, y, 3, 0, Math.PI * 2);
     ctx.fill();
   }
+  ctx.restore();
 }
 
