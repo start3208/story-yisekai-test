@@ -12,7 +12,8 @@ import {
   BruteGoalId,
   GenreId
 } from './types';
-import { resolveEnding, getRepresentativeEndings } from './data/endingsData';
+import { resolveEnding } from './data/endingsData';
+import { getAllCombinations } from './data/combinations';
 import { getUnlockedEndings, recordUnlockedEnding } from './utils/storage';
 import { QuestionCard } from './components/QuestionCard';
 import { ResultView } from './components/ResultView';
@@ -70,7 +71,10 @@ export function App() {
     }
     if (currentStep === 4) {
       if (selections.identity === 'peasant') {
-        // Peasant route step 4: Race selection
+        // Peasant route step 4: Non-living for 'other' cheat, biological races for standard cheats
+        if (selections.cheat === 'other') {
+          return { question: QUIZ_QUESTIONS.q4_race_other, totalSteps: 5 };
+        }
         return { question: QUIZ_QUESTIONS.q4_race, totalSteps: 5 };
       }
       // Standard route step 4: Genre selection
@@ -102,7 +106,8 @@ export function App() {
       if (q3Opt) labels.push(q3Opt.label);
     }
     if (selections.race) {
-      const qrOpt = QUIZ_QUESTIONS.q4_race.options.find((o) => o.id === selections.race);
+      const qrOpt = QUIZ_QUESTIONS.q4_race.options.find((o) => o.id === selections.race)
+        || QUIZ_QUESTIONS.q4_race_other.options.find((o) => o.id === selections.race);
       if (qrOpt) labels.push(qrOpt.label);
     }
     if (selections.bruteGoal) {
@@ -221,7 +226,7 @@ export function App() {
   };
 
   const { question, totalSteps } = getCurrentQuestion();
-  const totalPossibleEndings = getRepresentativeEndings().length;
+  const totalPossibleEndings = getAllCombinations().length;
 
   return (
     <div className="relative min-h-screen bg-stone-950 text-stone-100 flex flex-col font-sans selection:bg-amber-500/30 selection:text-amber-200">
@@ -310,6 +315,7 @@ export function App() {
         onClose={() => setIsGalleryOpen(false)}
         unlockedEndingIds={unlockedIds}
         onSelectEndingToView={handleSelectEndingFromGallery}
+        onUpdateUnlockedIds={(ids) => setUnlockedIds(ids)}
       />
     </div>
   );

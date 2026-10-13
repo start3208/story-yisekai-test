@@ -80,6 +80,13 @@ export const QUIZ_QUESTIONS: Record<string, QuizQuestion> = {
         badge: '物理哲学 (？)',
         flavor: '（“没那么多花里胡哨的魔法，纯粹是力量大到能一巴掌抽碎次元壁。”）',
         icon: 'Zap'
+      },
+      {
+        id: 'other',
+        label: '其他 / 超验异化',
+        badge: '超脱既定外挂',
+        flavor: '（“拒绝被寿命或数值定义，拥有不可名状的奇诡权柄或脱离常规碳基概念。”）',
+        icon: 'Sparkles'
       }
     ]
   },
@@ -174,12 +181,12 @@ export const QUIZ_QUESTIONS: Record<string, QuizQuestion> = {
     ]
   },
 
-  // Exclusive Race selection for "peasant / other"
+  // Exclusive Race selection for "peasant / other" with standard cheats (Human, Elf, Monster)
   q4_race: {
     step: 4,
     id: 'q4_race',
     title: '平民/其他专属 · 请选择你的初始种族：',
-    subtitle: '跳脱出固定王道身份的你，将以何种血统与物理形态降临异界？',
+    subtitle: '跳脱出固定王道身份的你，将以何种血统降临异界？',
     chapterBadge: 'CHAPTER 04 · 种族血统',
     options: [
       {
@@ -202,13 +209,45 @@ export const QUIZ_QUESTIONS: Record<string, QuizQuestion> = {
         badge: '骷髅/龙/史莱姆',
         flavor: '史莱姆、不死族骷髅、幼龙或者深渊魔狼，自带异化吞噬与无限蜕变进化潜质！',
         icon: 'Zap'
+      }
+    ]
+  },
+
+  // Exclusive Non-living selection for "other" cheat + "peasant" identity
+  q4_race_other: {
+    step: 4,
+    id: 'q4_race_other',
+    title: '超验异化专属 · 请选择你的非生物形态：',
+    subtitle: '睁开眼发现自己没有呼吸与心跳——在这个世界，你将以何种非凡器物君临大陆？',
+    chapterBadge: 'SPECIAL CHAPTER · 器物化身',
+    options: [
+      {
+        id: 'sword',
+        label: '绝世神器 / 封印妖刀',
+        badge: '器灵至尊',
+        flavor: '苏醒于远古剑冢古战场，谁拔出你谁就是天命主角……或者沦为你的执剑工具人。',
+        icon: 'Sword'
       },
       {
-        id: 'non_living',
-        label: '非生物 (???)',
-        badge: '神器/人偶/魔导具',
-        flavor: '睁开眼发现自己没有呼吸——你转生成了一柄绝世神剑、自动人偶、甚至自动贩卖机？！',
+        id: 'automaton',
+        label: '机巧魔偶 / 自律人偶',
+        badge: '机械觉醒',
+        flavor: '超古代魔导文明遗留的最高杰作，精金齿轮与永动机芯咬合，悄然诞生属于自己的灵魂。',
         icon: 'Cpu'
+      },
+      {
+        id: 'fortress',
+        label: '魔导城堡 / 迷宫要塞',
+        badge: '活体领地',
+        flavor: '你转生成了一座拥有自我意志的宏大地下城，冒险者、帝国军与恶龙都在你腹中进出。',
+        icon: 'Shield'
+      },
+      {
+        id: 'curio',
+        label: '现代奇物 / 自动贩卖机',
+        badge: '降维怪诞',
+        flavor: '异界荒原上唯一的红白机箱，靠吐出冰镇可乐、热腾腾泡面与降维道具让全大陆趋之若鹜。',
+        icon: 'Coffee'
       }
     ]
   },

@@ -18,6 +18,7 @@ import { SAGE_CUSTOM_SCRIPTS } from './customScriptsSage';
 import { SAINT_CUSTOM_SCRIPTS } from './customScriptsSaint';
 import { getPeasantCustomScript } from './customScriptsPeasant';
 import { synthesizeRichStory, generateEpicBruteStory } from './storyEngine';
+import { getCustomEnding } from './customEndings';
 
 // Human-readable labels
 const TRANSMIGRATION_NAMES: Record<TransmigrationId, string> = {
@@ -32,7 +33,8 @@ const CHEAT_NAMES: Record<CheatId, string> = {
   defense: '绝对防御',
   infinite_growth: '无限成长',
   omniscience: '无穷智慧',
-  brute_force: '纯粹劲大'
+  brute_force: '纯粹劲大',
+  other: '超验异化'
 };
 
 const IDENTITY_NAMES: Record<IdentityId, string> = {
@@ -47,7 +49,11 @@ const RACE_NAMES: Record<RaceId, string> = {
   human: '人类',
   elf: '精灵',
   monster: '魔物',
-  non_living: '非生物'
+  non_living: '非生物',
+  sword: '神剑器灵',
+  automaton: '机巧人偶',
+  fortress: '魔导城堡',
+  curio: '现代奇物'
 };
 
 const BRUTE_GOAL_NAMES: Record<BruteGoalId, string> = {
@@ -365,14 +371,15 @@ function generateBruteStory(trans: TransmigrationId, goal: BruteGoalId): EndingS
   const routeKey = `${TRANSMIGRATION_NAMES[trans]} × 纯粹劲大 × ${BRUTE_GOAL_NAMES[goal]}`;
 
   const epicBrute = generateEpicBruteStory(trans, goal);
-  const title = epicBrute.title;
-  const jpSubtitle = epicBrute.jpSubtitle;
-  const storyText = epicBrute.storyText;
-  const epilogueQuote = epicBrute.epilogueQuote;
+  const custom = getCustomEnding(id);
+  const title = custom?.title || epicBrute.title;
+  const jpSubtitle = custom?.jpSubtitle || epicBrute.jpSubtitle;
+  const storyText = custom?.storyText || epicBrute.storyText;
+  const epilogueQuote = custom?.epilogueQuote || epicBrute.epilogueQuote;
 
   let archetypeId: PersonalityArchetypeId = 'berserk_engine';
   let tags: string[] = ['纯物理蛮力', '一拳超人'];
-  const bystanderRoast = generateBystanderRoast('brute', goal, 'brute_force');
+  const bystanderRoast = custom?.bystanderRoast || generateBystanderRoast('brute', goal, 'brute_force');
   const stats: StatRadar = {
     power: 100,
     chill: 50,
@@ -489,15 +496,17 @@ function generateStandardStory(
   // 1. Determine Archetype
   const archetypeId = deriveArchetype(trans, cheat, identity, genre, race);
 
-  // 2. Generate Title & Subtitle tailored to all 4/5 variables
-  const synthTitle = synthesizeTitle(trans, cheat, identity, genre, race);
-  const title = customScript ? customScript.title : synthTitle.title;
-  const jpSubtitle = customScript ? customScript.jpSubtitle : synthTitle.jpSubtitle;
+  const custom = getCustomEnding(id);
 
-  // 3. Generate 3-Act bespoke rich story text (450+ chars, multi-act, full choice context)
+  // 2. Generate Title & Subtitle tailored to all variables
+  const synthTitle = synthesizeTitle(trans, cheat, identity, genre, race);
+  const title = custom?.title || (customScript ? customScript.title : synthTitle.title);
+  const jpSubtitle = custom?.jpSubtitle || (customScript ? customScript.jpSubtitle : synthTitle.jpSubtitle);
+
+  // 3. Generate bespoke rich story text
   const richStory = synthesizeRichStory(trans, cheat, identity, genre, race);
-  const storyText = richStory.storyText;
-  const epilogueQuote = richStory.epilogueQuote;
+  const storyText = custom?.storyText || richStory.storyText;
+  const epilogueQuote = custom?.epilogueQuote || richStory.epilogueQuote;
 
   // 5. Generate tags
   const tags = synthesizeTags(trans, cheat, identity, genre, race);
@@ -506,7 +515,7 @@ function generateStandardStory(
   const stats = synthesizeStats(trans, cheat, identity, genre);
 
   // 7. Generate Bystander Roast
-  const bystanderRoast = customScript ? customScript.bystanderRoast : generateBystanderRoast(identity, genre, cheat, race);
+  const bystanderRoast = custom?.bystanderRoast || (customScript ? customScript.bystanderRoast : generateBystanderRoast(identity, genre, cheat, race));
 
   return {
     id,
@@ -613,8 +622,10 @@ function synthesizeTitle(
     immortality: '拥有无尽寿命',
     defense: '全点绝对防御站桩反伤',
     infinite_growth: '数值呼吸都在暴涨翻倍',
-    omniscience: '手握全知剧透剧本'
-  }[cheat];
+    omniscience: '手握全知剧透剧本',
+    brute_force: '纯粹劲大一拳破万法',
+    other: '手握超验异化超脱规则'
+  }[cheat] || '超验异化';
 
   // Identity & Genre combinations
   if (identity === 'hero') {
@@ -758,12 +769,16 @@ function synthesizeTitle(
   }
 
   // Peasant / Other (incorporating Race)
-  const raceLabel = race ? {
+  const raceLabel = race ? ({
     human: '平民百姓',
     elf: '隐世精灵',
     monster: '野生魔物',
-    non_living: '灵性造物'
-  }[race] : '新手村平民';
+    non_living: '灵性造物',
+    sword: '绝世神器',
+    automaton: '机巧魔偶',
+    fortress: '魔导城堡',
+    curio: '现代奇物'
+  }[race] || '非凡异体') : '新手村平民';
 
   switch (genre) {
     case 'flex':
@@ -865,7 +880,8 @@ function synthesizeTags(
     defense: '绝对防御',
     infinite_growth: '数值怪胎',
     omniscience: '全知剧透',
-    brute_force: '纯度至高'
+    brute_force: '纯度至高',
+    other: '超验异化'
   };
 
   const gTags: Record<GenreId, string> = {
@@ -924,6 +940,10 @@ function synthesizeStats(
   } else if (cheat === 'omniscience') {
     stats.wisdom += 35;
     stats.sanity += 10;
+  } else if (cheat === 'other') {
+    stats.rebellion += 25;
+    stats.wisdom += 15;
+    stats.power += 15;
   }
 
   // Identity adjustments
@@ -1037,7 +1057,7 @@ export function getRepresentativeEndings(): EndingStory[] {
     { transmigration: 'truck', cheat: 'infinite_growth', identity: 'peasant', race: 'human', genre: 'flex' },
     { transmigration: 'overwork', cheat: 'immortality', identity: 'peasant', race: 'elf', genre: 'retired' },
     { transmigration: 'circle', cheat: 'infinite_growth', identity: 'peasant', race: 'monster', genre: 'revenge' },
-    { transmigration: 'god_apology', cheat: 'defense', identity: 'peasant', race: 'non_living', genre: 'daily' },
+    { transmigration: 'god_apology', cheat: 'other', identity: 'peasant', race: 'curio', genre: 'daily' },
     { transmigration: 'truck', cheat: 'omniscience', identity: 'peasant', race: 'human', genre: 'level_up' },
     { transmigration: 'circle', cheat: 'immortality', identity: 'peasant', race: 'elf', genre: 'romance' },
 

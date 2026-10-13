@@ -1,7 +1,7 @@
 export type TransmigrationId = 'truck' | 'overwork' | 'circle' | 'god_apology';
-export type CheatId = 'immortality' | 'defense' | 'infinite_growth' | 'omniscience' | 'brute_force';
+export type CheatId = 'immortality' | 'defense' | 'infinite_growth' | 'omniscience' | 'brute_force' | 'other';
 export type IdentityId = 'hero' | 'demon_king' | 'sage' | 'saint' | 'peasant';
-export type RaceId = 'human' | 'elf' | 'monster' | 'non_living';
+export type RaceId = 'human' | 'elf' | 'monster' | 'non_living' | 'sword' | 'automaton' | 'fortress' | 'curio';
 export type BruteGoalId = 'ordinary' | 'industrial' | 'return_home' | 'defeat_demon_king' | 'destroy_all';
 export type GenreId = 'retired' | 'revenge' | 'level_up' | 'flex' | 'daily' | 'romance';
 
@@ -106,7 +106,7 @@ export interface QuizOption {
 
 export interface QuizQuestion {
   step: number;
-  id: 'q1' | 'q2' | 'q3_identity' | 'q3_brute' | 'q4_race' | 'q4_genre_5' | 'q4_genre_demon' | 'q4_genre_sage' | 'q5_genre_peasant';
+  id: 'q1' | 'q2' | 'q3_identity' | 'q3_brute' | 'q4_race' | 'q4_race_other' | 'q4_genre_5' | 'q4_genre_demon' | 'q4_genre_sage' | 'q5_genre_peasant';
   title: string;
   subtitle: string;
   chapterBadge: string;

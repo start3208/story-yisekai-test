@@ -51,6 +51,14 @@ export function recordUnlockedEnding(endingId: string): { isNew: boolean; totalU
   }
 }
 
+export function unlockAllEndings(allIds: string[]): void {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(allIds));
+  } catch {
+    // ignore
+  }
+}
+
 export function clearAllProgress(): void {
   try {
     localStorage.removeItem(STORAGE_KEY);
@@ -58,3 +66,4 @@ export function clearAllProgress(): void {
     // ignore
   }
 }
+

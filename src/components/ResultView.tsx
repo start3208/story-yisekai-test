@@ -26,7 +26,9 @@ import {
   Moon,
   MessageSquare,
   Hourglass,
-  Crown
+  Crown,
+  ZoomIn,
+  ZoomOut
 } from 'lucide-react';
 import { EndingStory, PersonalityArchetype } from '../types';
 import { ARCHETYPES } from '../data/archetypesData';
@@ -74,9 +76,11 @@ export const ResultView: React.FC<ResultViewProps> = ({
   const ArchetypeIcon = ARCHETYPE_ICONS[archetype.iconName] || Sparkles;
 
   const [copied, setCopied] = useState(false);
+  const [copiedImage, setCopiedImage] = useState(false);
   const [isGeneratingPoster, setIsGeneratingPoster] = useState(false);
   const [posterUrl, setPosterUrl] = useState<string | null>(null);
   const [showPosterModal, setShowPosterModal] = useState(false);
+  const [isZoomed, setIsZoomed] = useState(false);
 
   // Trigger celebration confetti on mount
   useEffect(() => {
@@ -128,6 +132,7 @@ export const ResultView: React.FC<ResultViewProps> = ({
   const handleCreatePoster = async () => {
     soundFx.playSelect();
     setIsGeneratingPoster(true);
+    setIsZoomed(false);
     try {
       const url = await generateSharePoster(ending, archetype);
       setPosterUrl(url);
@@ -137,6 +142,39 @@ export const ResultView: React.FC<ResultViewProps> = ({
     } finally {
       setIsGeneratingPoster(false);
     }
+  };
+
+  const handleDownloadImage = () => {
+    if (!posterUrl) return;
+    soundFx.playSelect();
+    const cleanTitle = ending.title.replace(/[\/\\:*?"<>|《》【】]/g, '').trim().slice(0, 14);
+    const link = document.createElement('a');
+    link.href = posterUrl;
+    link.download = `异世界转生_NO${ending.number}_${cleanTitle}.png`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleCopyImage = async () => {
+    if (!posterUrl) return;
+    soundFx.playSelect();
+    try {
+      const res = await fetch(posterUrl);
+      const blob = await res.blob();
+      if (navigator.clipboard && 'ClipboardItem' in window) {
+        await navigator.clipboard.write([
+          new ClipboardItem({ 'image/png': blob })
+        ]);
+        setCopiedImage(true);
+        setTimeout(() => setCopiedImage(false), 2500);
+        return;
+      }
+    } catch (err) {
+      console.warn('Clipboard write image failed, falling back to download:', err);
+    }
+    // Fallback: trigger download if clipboard API not available
+    handleDownloadImage();
   };
 
   return (
@@ -415,46 +453,98 @@ export const ResultView: React.FC<ResultViewProps> = ({
           role="dialog"
           aria-modal="true"
           aria-labelledby="poster-modal-title"
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-950/85 backdrop-blur-md animate-fade-in"
+          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-stone-950/85 backdrop-blur-md animate-fade-in"
         >
-          <div className="relative max-w-sm sm:max-w-md w-full bg-stone-900 border border-stone-800 rounded-2xl p-4 sm:p-6 shadow-2xl flex flex-col items-center space-y-4">
+          <div className="relative max-w-md sm:max-w-lg md:max-w-xl w-full bg-stone-900 border border-stone-800 rounded-2xl p-4 sm:p-5 shadow-2xl flex flex-col items-center space-y-3 max-h-[95vh] overflow-y-auto">
             <button
               onClick={() => setShowPosterModal(false)}
-              className="absolute top-3 right-3 p-1.5 rounded-lg bg-stone-800 hover:bg-stone-700 text-stone-400 hover:text-stone-100"
+              className="absolute top-3 right-3 p-1.5 rounded-lg bg-stone-800 hover:bg-stone-700 text-stone-400 hover:text-stone-100 transition-colors z-10"
+              title="关闭弹窗"
             >
               <X className="w-5 h-5" />
             </button>
 
-            <div className="text-center space-y-1">
-              <h3 id="poster-modal-title" className="font-bold text-stone-100 text-base font-serif">
+            <div className="text-center space-y-1 pr-6 pl-2">
+              <h3 id="poster-modal-title" className="font-bold text-stone-100 text-base sm:text-lg font-serif">
                 你的异世界命运海报已生成
               </h3>
               <p className="text-xs text-stone-400">
-                可长按保存图片或点击下方按钮下载分享至朋友圈 / 社交平台
+                完整全景证书预览 · 包含终章物语、目击者锐评与心理测评
               </p>
             </div>
 
-            {/* Poster Preview */}
-            <div className="w-full max-h-[60vh] overflow-y-auto rounded-xl border border-stone-800 bg-stone-950 shadow-inner">
-              <img
-                src={posterUrl}
-                alt="异世界转生证书"
-                className="w-full h-auto rounded-xl select-none"
-              />
+            {/* Poster Preview Container (Full View by default, click to zoom) */}
+            <div className="w-full flex flex-col items-center">
+              <div
+                onClick={() => setIsZoomed(!isZoomed)}
+                className={`relative w-full rounded-xl border border-stone-800 bg-stone-950/90 shadow-inner flex items-center justify-center cursor-pointer group ${
+                  isZoomed
+                    ? 'max-h-[58vh] overflow-y-auto block p-2'
+                    : 'max-h-[58vh] sm:max-h-[64vh] overflow-hidden p-1.5'
+                }`}
+                title={isZoomed ? '点击还原完整全貌' : '点击放大查看1:1细节'}
+              >
+                <img
+                  src={posterUrl}
+                  alt="异世界转生证书"
+                  className={`${
+                    isZoomed
+                      ? 'w-full h-auto'
+                      : 'max-h-[55vh] sm:max-h-[61vh] max-w-full w-auto h-auto object-contain mx-auto'
+                  } rounded-lg select-none transition-all duration-200 shadow-xl`}
+                />
+
+                {/* Floating Zoom Hint Pill */}
+                <div className="absolute bottom-2.5 right-2.5 px-2.5 py-1 rounded-full bg-stone-900/90 border border-stone-700 text-[11px] font-mono text-stone-300 backdrop-blur-sm flex items-center gap-1 opacity-80 group-hover:opacity-100 transition-opacity shadow-lg pointer-events-none">
+                  {isZoomed ? (
+                    <>
+                      <ZoomOut className="w-3.5 h-3.5 text-amber-400" />
+                      <span>还原全貌</span>
+                    </>
+                  ) : (
+                    <>
+                      <ZoomIn className="w-3.5 h-3.5 text-amber-400" />
+                      <span>点击放大细节</span>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              <p className="text-[11px] text-stone-400 mt-2 text-center">
+                💡 提示：手机端可长按图片直接存储或发送给好友，也可点击下方按钮下载 / 复制
+              </p>
             </div>
 
-            <div className="w-full flex gap-3">
-              <a
-                href={posterUrl}
-                download={`异世界转生_NO${ending.number}_${ending.title.slice(1, 8)}.png`}
-                className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold text-xs sm:text-sm shadow-md transition-colors"
+            {/* Action Buttons */}
+            <div className="w-full flex flex-wrap gap-2 pt-1">
+              <button
+                onClick={handleDownloadImage}
+                className="flex-1 min-w-[130px] flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold text-xs sm:text-sm shadow-md transition-all active:scale-95"
               >
                 <Download className="w-4 h-4" />
-                <span>下载海报高清图</span>
-              </a>
+                <span>保存高清海报图</span>
+              </button>
+
+              <button
+                onClick={handleCopyImage}
+                className="flex-1 min-w-[120px] flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-stone-800 hover:bg-stone-700 text-stone-200 font-semibold text-xs sm:text-sm border border-stone-700 transition-all active:scale-95"
+              >
+                {copiedImage ? (
+                  <>
+                    <Check className="w-4 h-4 text-emerald-400" />
+                    <span className="text-emerald-400">已复制图片</span>
+                  </>
+                ) : (
+                  <>
+                    <Copy className="w-4 h-4 text-stone-400" />
+                    <span>复制图片</span>
+                  </>
+                )}
+              </button>
+
               <button
                 onClick={() => setShowPosterModal(false)}
-                className="px-4 py-2.5 rounded-xl bg-stone-800 hover:bg-stone-700 text-stone-300 font-medium text-xs sm:text-sm"
+                className="px-4 py-2.5 rounded-xl bg-stone-800/80 hover:bg-stone-700 text-stone-300 font-medium text-xs sm:text-sm transition-colors"
               >
                 关闭
               </button>
