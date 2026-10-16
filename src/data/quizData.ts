@@ -213,14 +213,21 @@ export const QUIZ_QUESTIONS: Record<string, QuizQuestion> = {
     ]
   },
 
-  // Exclusive Non-living selection for "other" cheat + "peasant" identity
+  // Exclusive selection for "other" cheat + "peasant" identity (Peasant Human + Non-living forms)
   q4_race_other: {
     step: 4,
     id: 'q4_race_other',
-    title: '超验异化专属 · 请选择你的非生物形态：',
-    subtitle: '睁开眼发现自己没有呼吸与心跳——在这个世界，你将以何种非凡器物君临大陆？',
-    chapterBadge: 'SPECIAL CHAPTER · 器物化身',
+    title: '超验异化专属 · 请选择你的降临形态：',
+    subtitle: '超越常规法则的异化苏醒——你将以凡骨平民还是非凡器物君临这片大陆？',
+    chapterBadge: 'SPECIAL CHAPTER · 异化化身',
     options: [
+      {
+        id: 'human',
+        label: '平民百姓 / 凡骨原住民',
+        badge: '超验凡人',
+        flavor: '看似手无寸铁、平平无奇的肉体凡胎，实则身负无法被测定的超验异化权柄，谁惹谁倒霉。',
+        icon: 'Home'
+      },
       {
         id: 'sword',
         label: '绝世神器 / 封印妖刀',

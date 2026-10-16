@@ -21,6 +21,8 @@ export const PEASANT_IDENTITY_ID: IdentityId = 'peasant';
 export const STANDARD_PEASANT_RACE_IDS: RaceId[] = ['human', 'elf', 'monster'];
 // “其他”能力下的平民非生物专属形态（4种）
 export const NON_LIVING_RACE_IDS: RaceId[] = ['sword', 'automaton', 'fortress', 'curio'];
+// “其他”能力下的平民形态（包含凡骨平民与4种非生物形态）
+export const OTHER_PEASANT_RACE_IDS: RaceId[] = ['human', 'sword', 'automaton', 'fortress', 'curio'];
 
 export const GENRE_IDS: GenreId[] = ['retired', 'revenge', 'level_up', 'flex', 'daily', 'romance'];
 
@@ -30,7 +32,7 @@ export interface ValidCombination {
   selections: UserSelections;
 }
 
-// 缓存全部 884 条组合
+// 缓存全部 908 条组合
 let cachedCombinations: ValidCombination[] | null = null;
 let idToCombinationMap: Map<string, ValidCombination> | null = null;
 
@@ -109,10 +111,10 @@ export function getAllCombinations(): ValidCombination[] {
     }
   }
 
-  // 5. 平民非生物专属路线（“其他”外挂）：4 种穿越 × 1 种其他外挂 × 4 种非生物形态 × 6 种流派 = 96 条
+  // 5. 平民异化形态专属路线（“其他”外挂）：4 种穿越 × 1 种其他外挂 × 5 种种族/形态 × 6 种流派 = 120 条
   // ID 结构：`${trans}_other_peasant_${race}_${genre}`
   for (const trans of TRANSMIGRATION_IDS) {
-    for (const race of NON_LIVING_RACE_IDS) {
+    for (const race of OTHER_PEASANT_RACE_IDS) {
       for (const genre of GENRE_IDS) {
         const selections: UserSelections = {
           transmigration: trans,
