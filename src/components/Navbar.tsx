@@ -27,26 +27,26 @@ export const Navbar: React.FC<NavbarProps> = ({
   const percentage = Math.round((unlockedCount / totalEndings) * 100);
 
   return (
-    <header className="relative z-20 w-full border-b border-stone-800/80 bg-stone-950/80 backdrop-blur-md">
+    <header className="relative z-20 w-full border-b border-slate-200/90 bg-[#fffdf7]/88 backdrop-blur-md quiz-navbar">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
         {/* Brand Title */}
         <button
           onClick={onReset}
           className="group flex items-center gap-2.5 text-left focus:outline-none"
         >
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-500 to-amber-700 flex items-center justify-center text-stone-950 font-bold shadow-md shadow-amber-500/20 group-hover:scale-105 transition-transform">
-            <Sparkles className="w-4 h-4 text-stone-950" />
+          <div className="w-8 h-8 rounded-lg bg-[#c9b8eb] border-2 border-[#2f2745] flex items-center justify-center text-[#2f2745] font-bold shadow-[3px_3px_0_#2f2745] group-hover:scale-105 transition-transform">
+            <Sparkles className="w-4 h-4 text-[#2f2745]" />
           </div>
           <div>
             <div className="flex items-center gap-1.5">
-              <span className="font-serif font-bold text-stone-100 text-sm sm:text-base tracking-wide group-hover:text-amber-300 transition-colors">
+              <span className="font-serif font-bold text-[#2f2745] text-sm sm:text-base tracking-wide group-hover:text-violet-700 transition-colors">
                 异世界转生命运之书
               </span>
               <span className="hidden sm:inline-block px-1.5 py-0.5 text-[10px] font-mono font-semibold rounded bg-amber-500/10 text-amber-400 border border-amber-500/20">
                 PSY-QUIZ
               </span>
             </div>
-            <p className="text-[11px] text-stone-400 font-sans tracking-tight">
+              <p className="text-[11px] text-slate-500 font-sans tracking-tight">
               轻小说分支 × 潜意识人格测评
             </p>
           </div>
@@ -61,12 +61,12 @@ export const Navbar: React.FC<NavbarProps> = ({
               soundFx.playSelect();
               onOpenGallery();
             }}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-stone-900/90 border border-stone-700 hover:border-amber-500/50 text-stone-200 hover:text-amber-300 text-xs font-medium transition-all shadow-sm active:scale-95"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border-2 border-[#2f2745] hover:bg-[#eee7fa] text-[#2f2745] text-xs font-medium transition-all shadow-[2px_2px_0_#2f2745] active:scale-95"
             title="查看异世界命运图鉴与16种潜意识人格"
           >
-            <BookOpen className="w-3.5 h-3.5 text-amber-400" />
+            <BookOpen className="w-3.5 h-3.5 text-violet-700" />
             <span>图鉴</span>
-            <span className="font-mono text-[11px] text-amber-400/90 bg-amber-950/60 px-1.5 py-0.2 rounded border border-amber-500/20">
+            <span className="font-mono text-[11px] text-violet-800 bg-[#eee7fa] px-1.5 py-0.2 rounded border border-violet-200">
               {unlockedCount} 篇已收录
             </span>
           </button>
@@ -75,14 +75,14 @@ export const Navbar: React.FC<NavbarProps> = ({
           <button
             id="btn-toggle-sound"
             onClick={handleToggleSound}
-            className="p-2 rounded-lg bg-stone-900/90 border border-stone-700 hover:border-stone-500 text-stone-300 hover:text-amber-300 transition-all active:scale-95"
+            className="p-2 rounded-lg bg-white border-2 border-[#2f2745] hover:bg-[#eee7fa] text-[#2f2745] transition-all active:scale-95"
             title={soundOn ? '静音音效' : '开启音效'}
             aria-label="Toggle Sound"
           >
             {soundOn ? (
-              <Volume2 className="w-4 h-4 text-amber-400" />
+              <Volume2 className="w-4 h-4 text-violet-700" />
             ) : (
-              <VolumeX className="w-4 h-4 text-stone-500" />
+              <VolumeX className="w-4 h-4 text-slate-400" />
             )}
           </button>
 
@@ -94,7 +94,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 soundFx.playSelect();
                 onReset();
               }}
-              className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/30 hover:bg-amber-500/20 text-amber-300 text-xs font-medium transition-all active:scale-95"
+              className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#f4d877] border-2 border-[#2f2745] hover:bg-[#edc75c] text-[#2f2745] text-xs font-medium transition-all shadow-[2px_2px_0_#2f2745] active:scale-95"
             >
               <RotateCcw className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">重新转生</span>

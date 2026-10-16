@@ -33,6 +33,7 @@ import { getAllCombinations } from '../data/combinations';
 import { EndingStory, PersonalityArchetype, PersonalityArchetypeId } from '../types';
 import { soundFx } from '../utils/audio';
 import { unlockAllEndings, clearAllProgress } from '../utils/storage';
+import { getArchetypeImage } from '../utils/archetypeAssets';
 
 interface GalleryModalProps {
   isOpen: boolean;
@@ -579,11 +580,8 @@ export const GalleryModal: React.FC<GalleryModalProps> = ({
                       >
                         <div className="space-y-3">
                           <div className="flex items-center justify-between">
-                            <div
-                              className="w-10 h-10 rounded-xl flex items-center justify-center text-white shadow"
-                              style={{ backgroundColor: arch.color }}
-                            >
-                              <IconComp className="w-5 h-5" />
+                            <div className="w-20 h-20 rounded-xl bg-[#eee7fa] border-2 border-[#2f2745] flex items-center justify-center overflow-hidden shadow-[2px_2px_0_#2f2745]">
+                              <img src={getArchetypeImage(arch.id)} alt={`${arch.name}形象`} className="w-full h-full object-contain" />
                             </div>
                             <span
                               className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
@@ -634,14 +632,8 @@ export const GalleryModal: React.FC<GalleryModalProps> = ({
                 <div className="bg-stone-950/80 border border-stone-800 rounded-3xl p-6 sm:p-8 space-y-6">
                   {/* Top Bar */}
                   <div className="flex items-center gap-4 border-b border-stone-800 pb-5">
-                    <div
-                      className="w-14 h-14 rounded-2xl flex items-center justify-center text-white shadow-lg"
-                      style={{ backgroundColor: selectedArchetypeDetail.color }}
-                    >
-                      {React.createElement(
-                        ARCHETYPE_ICONS[selectedArchetypeDetail.iconName] || Sparkles,
-                        { className: 'w-7 h-7' }
-                      )}
+                    <div className="w-32 h-32 rounded-2xl bg-[#eee7fa] border-2 border-[#2f2745] flex items-center justify-center overflow-hidden shadow-[3px_3px_0_#2f2745] shrink-0">
+                      <img src={getArchetypeImage(selectedArchetypeDetail.id)} alt={`${selectedArchetypeDetail.name}形象`} className="w-full h-full object-contain" />
                     </div>
                     <div>
                       <div className="flex items-center gap-2.5">

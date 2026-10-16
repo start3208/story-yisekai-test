@@ -229,7 +229,7 @@ export function App() {
   const totalPossibleEndings = getAllCombinations().length;
 
   return (
-    <div className="relative min-h-screen bg-stone-950 text-stone-100 flex flex-col font-sans selection:bg-amber-500/30 selection:text-amber-200">
+    <div className="relative min-h-screen quiz-app text-slate-900 flex flex-col font-sans selection:bg-violet-200 selection:text-violet-950">
       {/* Background Ambience */}
       <AmbientBackground />
 
@@ -243,7 +243,7 @@ export function App() {
       />
 
       {/* Main Content Area */}
-      <main className="relative z-10 flex-1 flex flex-col justify-center items-center">
+      <main className="relative z-10 flex-1 flex flex-col justify-center items-center quiz-main">
         {currentStep !== 99 ? (
           <div className="w-full flex flex-col items-center">
             {/* Top Back & Quick Action Row */}
@@ -252,7 +252,7 @@ export function App() {
                 <button
                   id="btn-back-step"
                   onClick={handleStepBack}
-                  className="flex items-center gap-1.5 text-xs text-stone-400 hover:text-amber-300 transition-colors py-1 px-2.5 rounded-lg bg-stone-900/60 border border-stone-800 hover:border-stone-700"
+                  className="quiz-nav-action quiz-nav-action--back flex items-center gap-1.5 text-xs transition-colors py-2 px-3 rounded-xl"
                 >
                   <ArrowLeft className="w-3.5 h-3.5" />
                   <span>返回上一步</span>
@@ -261,7 +261,7 @@ export function App() {
                 <button
                   id="btn-restart-quiz"
                   onClick={handleReset}
-                  className="text-xs text-stone-400 hover:text-stone-300 transition-colors py-1 px-2.5 rounded-lg bg-stone-900/40 hover:bg-stone-900/80"
+                  className="quiz-nav-action quiz-nav-action--restart text-xs transition-colors py-2 px-3 rounded-xl"
                 >
                   重新开始
                 </button>
@@ -293,7 +293,7 @@ export function App() {
       </main>
 
       {/* Global Footer */}
-      <footer className="relative z-10 w-full py-4 border-t border-stone-900/80 bg-stone-950/60 backdrop-blur-sm text-center text-xs text-stone-400">
+      <footer className="relative z-10 w-full py-4 border-t border-slate-200 bg-white/65 backdrop-blur-sm text-center text-xs text-slate-500">
         <div className="max-w-4xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
           <span>异世界转生命运之书 · 探索多元时空终章与 16 种潜意识人格</span>
           <div className="flex items-center gap-3">

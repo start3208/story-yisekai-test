@@ -35,6 +35,7 @@ import { ARCHETYPES } from '../data/archetypesData';
 import { RadarChart } from './RadarChart';
 import { generateSharePoster } from '../utils/shareCard';
 import { soundFx } from '../utils/audio';
+import { getArchetypeImage } from '../utils/archetypeAssets';
 
 interface ResultViewProps {
   ending: EndingStory;
@@ -178,15 +179,15 @@ export const ResultView: React.FC<ResultViewProps> = ({
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto px-4 py-8 sm:py-12">
+    <div className="w-full max-w-4xl mx-auto px-3 py-5 sm:py-8 result-page">
       {/* Top Banner Notice */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex items-center justify-between mb-6 p-3 sm:p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs sm:text-sm font-sans"
+        className="flex items-center justify-between mb-5 p-3 sm:p-4 rounded-xl bg-[#fff7da] border-2 border-[#2f2745] text-[#2f2745] text-xs sm:text-sm font-sans shadow-[3px_3px_0_#2f2745]"
       >
         <div className="flex items-center gap-2">
-          <Award className="w-4 h-4 text-amber-400 shrink-0" />
+          <Award className="w-4 h-4 text-[#8b69bd] shrink-0" />
           <span>
             {isNewUnlock ? '🎉 恭喜达成全新剧情分支！已收录至命运图鉴' : '📖 再次重温已收录的异世界命运'}
           </span>
@@ -207,39 +208,39 @@ export const ResultView: React.FC<ResultViewProps> = ({
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
-        className="relative bg-stone-900/90 border border-stone-800 rounded-3xl p-6 sm:p-10 shadow-2xl backdrop-blur-xl overflow-hidden"
+          className="relative bg-[#fffdf7] border-2 border-[#2f2745] rounded-2xl p-4 sm:p-8 shadow-[6px_6px_0_#2f2745] overflow-hidden"
       >
         {/* Ambient Top Glow according to Archetype color */}
         <div
-          className="absolute -top-32 left-1/2 -translate-x-1/2 w-96 h-96 rounded-full blur-3xl opacity-20 pointer-events-none"
+          className="absolute -top-32 left-1/2 -translate-x-1/2 w-96 h-96 rounded-full blur-3xl opacity-25 pointer-events-none"
           style={{ backgroundColor: archetype.color }}
         />
 
         {/* Certificate Header Bar */}
-        <div className="text-center space-y-2 mb-8 border-b border-stone-800/80 pb-6">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-stone-950 border border-stone-800 text-xs font-mono text-stone-400">
+          <div className="text-center space-y-2 mb-6 border-b-2 border-dashed border-slate-200 pb-5">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border-2 border-[#2f2745] text-xs font-mono text-slate-600">
             <span className="w-2 h-2 rounded-full" style={{ backgroundColor: archetype.color }} />
             <span>DESTINY ENDING NO.{String(ending.number).padStart(2, '0')}</span>
-            <span className="text-stone-400">|</span>
-            <span className="text-amber-400 font-semibold">{ending.category}</span>
+            <span className="text-slate-400">|</span>
+            <span className="text-violet-700 font-semibold">{ending.category}</span>
           </div>
 
-          <h1 className="text-xl sm:text-3xl font-bold font-serif text-stone-100 tracking-tight leading-snug pt-2">
+          <h1 className="text-xl sm:text-3xl font-bold font-serif text-[#2f2745] tracking-tight leading-snug pt-2">
             {ending.title}
           </h1>
 
-          <p className="text-xs text-stone-400 italic max-w-2xl mx-auto font-sans leading-relaxed">
+          <p className="text-xs text-slate-500 italic max-w-2xl mx-auto font-sans leading-relaxed">
             {ending.jpSubtitle}
           </p>
 
           <div className="flex flex-wrap justify-center items-center gap-1.5 pt-2">
-            <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-semibold bg-amber-500/15 text-amber-300 border border-amber-500/30">
+              <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-semibold bg-[#eee7fa] text-violet-800 border border-violet-200">
               🛤️ 抉择路线: {ending.routeKey}
             </span>
             {ending.tags.map((tag, idx) => (
               <span
                 key={idx}
-                className="px-2 py-0.5 rounded text-[11px] font-medium bg-stone-800/80 text-stone-300 border border-stone-700/50"
+                className="px-2 py-0.5 rounded text-[11px] font-medium bg-white text-slate-600 border border-slate-200"
               >
                 #{tag}
               </span>
@@ -247,31 +248,50 @@ export const ResultView: React.FC<ResultViewProps> = ({
           </div>
         </div>
 
+        {/* Character-first result reveal: the image is visible before the long story. */}
+        <motion.div
+          initial={{ opacity: 0, y: 18, scale: 0.96 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.42, ease: 'easeOut' }}
+          className="result-character-hero"
+        >
+          <div className="result-character-hero__art">
+            <img src={getArchetypeImage(archetype.id)} alt={`${archetype.name}形象`} />
+          </div>
+          <div className="result-character-hero__copy">
+            <span className="result-character-hero__eyebrow">你的异世界人格类型是</span>
+            <strong>{archetype.name}</strong>
+            <b>{archetype.badge}</b>
+            <small>{archetype.title}</small>
+            <em>{archetype.subtitle}</em>
+          </div>
+        </motion.div>
+
         {/* Ending Story Box */}
-        <div className="relative mb-8 bg-stone-950/70 border border-stone-800/90 rounded-2xl p-5 sm:p-7 space-y-4">
-          <div className="flex items-center gap-2 text-xs font-mono text-amber-400 font-semibold">
+        <div className="relative mb-6 bg-white/70 border-2 border-[#2f2745] rounded-2xl p-4 sm:p-6 space-y-4">
+          <div className="flex items-center gap-2 text-xs font-mono text-violet-700 font-semibold">
             <BookOpen className="w-4 h-4" />
             <span>【终章物语 · 你的异世界下半生】</span>
           </div>
 
-          <div className="text-sm sm:text-base text-stone-200 leading-relaxed font-sans whitespace-pre-line space-y-3">
+          <div className="text-sm sm:text-base text-slate-700 leading-relaxed font-sans whitespace-pre-line space-y-3">
             {ending.storyText}
           </div>
 
           {/* Bystander Comedy Roast Quote (Unique Single Roast Block) */}
           {ending.bystanderRoast && (
-            <div className="p-3.5 rounded-xl bg-stone-900/90 border border-amber-500/20 space-y-1.5 mt-4">
+            <div className="p-3.5 rounded-xl bg-[#f6e3b3] border-2 border-[#2f2745] space-y-1.5 mt-4">
               <div className="flex items-center justify-between text-xs">
-                <span className="flex items-center gap-1.5 font-bold text-amber-400">
+                <span className="flex items-center gap-1.5 font-bold text-[#5a408e]">
                   <MessageSquare className="w-3.5 h-3.5" />
                   <span>【目击者现场锐评】</span>
-                  <span className="text-stone-400 font-normal">({ending.bystanderRoast.witness})</span>
+                  <span className="text-slate-600 font-normal">({ending.bystanderRoast.witness})</span>
                 </span>
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30">
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-white/70 text-violet-800 border border-violet-200">
                   #{ending.bystanderRoast.tag}
                 </span>
               </div>
-              <p className="text-xs sm:text-sm text-stone-300 font-sans italic">
+              <p className="text-xs sm:text-sm text-slate-700 font-sans italic">
                 {ending.bystanderRoast.comment}
               </p>
             </div>
@@ -279,22 +299,16 @@ export const ResultView: React.FC<ResultViewProps> = ({
         </div>
 
         {/* Psychological Archetype & Reality Breakdown Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 mb-6">
           {/* Left Column: Archetype Profile Card (7 cols) */}
           <div className="lg:col-span-7 space-y-5">
             {/* Archetype Badge & Title */}
-            <div className="bg-stone-950/60 border border-stone-800 rounded-2xl p-5 space-y-3">
+            <div className="bg-white/75 border-2 border-[#2f2745] rounded-2xl p-4 space-y-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
-                  <div
-                    className="w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-md"
-                    style={{ backgroundColor: archetype.color }}
-                  >
-                    <ArchetypeIcon className="w-5 h-5" />
-                  </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <h3 className="text-lg font-bold font-serif text-stone-100">
+                      <h3 className="text-lg font-bold font-serif text-[#2f2745]">
                         {archetype.name}
                       </h3>
                       <span
@@ -304,7 +318,7 @@ export const ResultView: React.FC<ResultViewProps> = ({
                         {archetype.badge}
                       </span>
                     </div>
-                    <p className="text-xs text-stone-400 font-medium">
+                    <p className="text-xs text-slate-500 font-medium">
                       {archetype.title}
                     </p>
                   </div>
@@ -312,12 +326,12 @@ export const ResultView: React.FC<ResultViewProps> = ({
               </div>
 
               {/* Quote */}
-              <div className="p-3 rounded-xl bg-stone-900/90 border border-stone-800 text-xs sm:text-sm font-medium text-amber-300/90 italic font-serif">
+              <div className="p-3 rounded-xl bg-[#f6e3b3] border-2 border-[#2f2745] text-xs sm:text-sm font-medium text-[#5a408e] italic font-serif">
                 {archetype.subtitle}
               </div>
 
               {/* Personality Summary */}
-              <p className="text-xs sm:text-sm text-stone-300 leading-relaxed font-sans">
+              <p className="text-xs sm:text-sm text-slate-700 leading-relaxed font-sans">
                 {archetype.summary}
               </p>
             </div>
@@ -352,13 +366,19 @@ export const ResultView: React.FC<ResultViewProps> = ({
           {/* Right Column: Radar Chart & Party Affinity (5 cols) */}
           <div className="lg:col-span-5 flex flex-col justify-between space-y-5">
             {/* 6-Dimension Radar Chart */}
-            <div className="bg-stone-950/60 border border-stone-800 rounded-2xl p-5 flex flex-col items-center justify-center">
+            <motion.div
+              initial={{ opacity: 0, y: 26 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.35 }}
+              transition={{ duration: 0.5, ease: 'easeOut' }}
+              className="bg-stone-950/60 border border-stone-800 rounded-2xl p-5 flex flex-col items-center justify-center result-radar-card"
+            >
               <div className="w-full flex items-center justify-between text-xs font-mono text-stone-400 mb-2">
                 <span>【六维属性鉴定】</span>
                 <span className="text-amber-400 font-bold">TOTAL RATING</span>
               </div>
               <RadarChart stats={ending.stats} color={archetype.color} size={250} />
-            </div>
+            </motion.div>
 
             {/* Party Affinity Box (Best Partner & Nemesis) */}
             <div className="bg-stone-950/60 border border-stone-800 rounded-2xl p-5 space-y-3">
@@ -396,7 +416,7 @@ export const ResultView: React.FC<ResultViewProps> = ({
                 soundFx.playSelect();
                 onRestart();
               }}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-stone-800 hover:bg-stone-700 text-stone-200 text-xs sm:text-sm font-semibold transition-all active:scale-95 shadow-sm"
+              className="result-action result-action--primary flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all active:scale-95 shadow-sm"
             >
               <RotateCcw className="w-4 h-4 text-stone-400" />
               <span>重新转生</span>
@@ -408,7 +428,7 @@ export const ResultView: React.FC<ResultViewProps> = ({
                 soundFx.playSelect();
                 onOpenGallery();
               }}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-stone-800/80 hover:bg-stone-700 text-stone-300 text-xs sm:text-sm font-medium transition-all active:scale-95"
+              className="result-action result-action--secondary flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-medium transition-all active:scale-95"
             >
               <Layers className="w-4 h-4 text-amber-400" />
               <span>命运图鉴 ({unlockedCount}篇已解锁)</span>
@@ -419,7 +439,7 @@ export const ResultView: React.FC<ResultViewProps> = ({
             <button
               id="btn-copy-result-text"
               onClick={handleCopySummary}
-              className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-stone-900 border border-stone-700 hover:border-stone-500 text-stone-300 text-xs sm:text-sm font-medium transition-all active:scale-95"
+              className="result-action result-action--secondary flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-medium transition-all active:scale-95"
             >
               {copied ? (
                 <>
@@ -438,7 +458,7 @@ export const ResultView: React.FC<ResultViewProps> = ({
               id="btn-generate-poster"
               onClick={handleCreatePoster}
               disabled={isGeneratingPoster}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-stone-950 font-bold text-xs sm:text-sm shadow-lg shadow-amber-500/20 transition-all active:scale-95"
+              className="result-action result-action--cta flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm shadow-lg transition-all active:scale-95"
             >
               <Share2 className="w-4 h-4" />
               <span>{isGeneratingPoster ? '生成海报中...' : '生成分享海报'}</span>

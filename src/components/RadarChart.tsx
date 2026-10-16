@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion } from 'motion/react';
 import { StatRadar } from '../types';
 
 interface RadarChartProps {
@@ -39,8 +40,14 @@ export const RadarChart: React.FC<RadarChartProps> = ({
   }).join(' ');
 
   return (
-    <div className="relative flex flex-col items-center justify-center">
-      <svg width={size} height={size} className="overflow-visible">
+    <motion.div
+      initial={{ opacity: 0, scale: 0.72, y: 18 }}
+      whileInView={{ opacity: 1, scale: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.45 }}
+      transition={{ duration: 0.7, ease: 'easeOut' }}
+      className="relative flex flex-col items-center justify-center radar-chart-reveal"
+    >
+      <svg width={size} height={size} className="overflow-visible radar-chart-svg">
         {/* Background Grid Polygons */}
         {levels.map((level, lvlIdx) => {
           const gridPoints = Array.from({ length: numAxes }).map((_, i) => {
@@ -55,8 +62,8 @@ export const RadarChart: React.FC<RadarChartProps> = ({
             <polygon
               key={lvlIdx}
               points={gridPoints}
-              fill={lvlIdx === levels.length - 1 ? 'rgba(28, 25, 23, 0.6)' : 'none'}
-              stroke="rgba(120, 113, 108, 0.25)"
+              fill={lvlIdx === levels.length - 1 ? 'rgba(238, 231, 250, 0.72)' : 'none'}
+              stroke="rgba(90, 64, 142, 0.24)"
               strokeWidth="1"
               strokeDasharray={lvlIdx < levels.length - 1 ? '2 2' : undefined}
             />
@@ -75,7 +82,7 @@ export const RadarChart: React.FC<RadarChartProps> = ({
               y1={center}
               x2={x}
               y2={y}
-              stroke="rgba(120, 113, 108, 0.3)"
+              stroke="rgba(47, 39, 69, 0.26)"
               strokeWidth="1"
             />
           );
@@ -124,16 +131,16 @@ export const RadarChart: React.FC<RadarChartProps> = ({
               y={y}
               textAnchor="middle"
               dominantBaseline="central"
-              className="text-[11px] font-medium fill-stone-300 select-none font-sans"
+              className="text-[11px] font-medium fill-[#687080] select-none font-sans"
             >
               {axis.label}
-              <tspan className="text-[10px] fill-amber-400 font-bold" dx="3">
+              <tspan className="text-[10px] fill-[#5a408e] font-bold" dx="3">
                 {axis.val}
               </tspan>
             </text>
           );
         })}
       </svg>
-    </div>
+    </motion.div>
   );
 };

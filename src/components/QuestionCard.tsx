@@ -60,6 +60,42 @@ const ICON_MAP: Record<string, React.ElementType> = {
 };
 
 const HOTKEYS = ['A', 'B', 'C', 'D', 'E'];
+const OPTION_EMOJI: Record<string, string> = {
+  truck: '🚚',
+  overwork: '💤',
+  circle: '🌀',
+  god_apology: '🙇',
+  immortality: '♾️',
+  defense: '🛡️',
+  infinite_growth: '📈',
+  omniscience: '📚',
+  brute_force: '💪',
+  other: '✨',
+  hero: '⚔️',
+  demon_king: '👿',
+  sage: '🧙',
+  saint: '✨',
+  peasant: '🏠',
+  ordinary: '🌿',
+  industrial: '⚙️',
+  return_home: '🚪',
+  defeat_demon_king: '🔥',
+  destroy_all: '💥',
+  human: '🧑',
+  elf: '🧝',
+  monster: '👾',
+  non_living: '🗿',
+  sword: '🗡️',
+  automaton: '🤖',
+  fortress: '🏰',
+  curio: '🧸',
+  retired: '☕',
+  revenge: '⚡',
+  level_up: '🌟',
+  flex: '😎',
+  daily: '🍞',
+  romance: '💖'
+};
 
 export const QuestionCard: React.FC<QuestionCardProps> = ({
   question,
@@ -100,39 +136,39 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
   }, [question, onSelectOption]);
 
   return (
-    <div className="w-full max-w-2xl mx-auto px-4 py-6 sm:py-10">
+    <div className="w-full max-w-2xl mx-auto px-3 py-4 sm:py-8 quiz-card-shell">
       {/* Progress & Chapter Tracker */}
       <div className="mb-6 space-y-3">
-        <div className="flex items-center justify-between text-xs text-stone-400">
+        <div className="flex items-center justify-between text-xs text-slate-500">
           <div className="flex items-center gap-2 font-mono">
-            <span className="px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20 font-semibold tracking-wider">
+            <span className="px-2 py-0.5 rounded bg-[#eee7fa] text-violet-800 border border-violet-200 font-semibold tracking-wider">
               {question.chapterBadge}
             </span>
           </div>
-          <span className="font-mono text-stone-400">
-            STEP <strong className="text-amber-400">{currentStep}</strong> / {totalSteps}
+          <span className="font-mono text-slate-500">
+            STEP <strong className="text-violet-700">{currentStep}</strong> / {totalSteps}
           </span>
         </div>
 
         {/* Step Progress Bar */}
-        <div className="w-full h-1.5 bg-stone-900 rounded-full overflow-hidden border border-stone-800">
+        <div className="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden border border-slate-300">
           <div
-            className="h-full bg-gradient-to-r from-amber-600 via-amber-500 to-yellow-400 rounded-full transition-all duration-500 ease-out"
+            className="h-full bg-gradient-to-r from-[#8b69bd] via-[#a98bd3] to-[#f0c95d] rounded-full transition-all duration-500 ease-out"
             style={{ width: `${(currentStep / totalSteps) * 100}%` }}
           />
         </div>
 
         {/* Breadcrumb Trail */}
         {breadcrumbLabels.length > 0 && (
-          <div className="flex flex-wrap items-center gap-1.5 text-[11px] text-stone-400 pt-1">
-            <span className="text-stone-400">已选前置：</span>
+          <div className="flex flex-wrap items-center gap-1.5 text-[11px] text-slate-500 pt-1">
+            <span className="text-slate-500">已选前置：</span>
             {breadcrumbLabels.map((lbl, idx) => (
               <React.Fragment key={idx}>
-                <span className="px-1.5 py-0.5 bg-stone-900/90 text-stone-300 rounded border border-stone-800 font-mono">
+                <span className="px-1.5 py-0.5 bg-white text-slate-600 rounded border border-slate-200 font-mono">
                   {lbl}
                 </span>
                 {idx < breadcrumbLabels.length - 1 && (
-                  <span className="text-stone-400 text-[10px]">→</span>
+                  <span className="text-slate-400 text-[10px]">→</span>
                 )}
               </React.Fragment>
             ))}
@@ -148,14 +184,14 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: -14, scale: 0.98 }}
           transition={{ duration: 0.28, ease: 'easeOut' }}
-          className="relative bg-stone-900/80 border border-stone-800/90 rounded-2xl p-5 sm:p-8 backdrop-blur-xl shadow-2xl shadow-stone-950/80"
+          className="relative bg-[#fffdf7] border-2 border-[#2f2745] rounded-2xl p-4 sm:p-7 shadow-[5px_5px_0_#2f2745] quiz-question-panel"
         >
           {/* Question Title & Subtitle */}
           <div className="mb-6 sm:mb-8 space-y-2">
-            <h2 className="text-xl sm:text-2xl font-bold font-serif text-stone-100 tracking-tight leading-snug">
+            <h2 className="text-xl sm:text-2xl font-bold font-serif text-[#2f2745] tracking-tight leading-snug">
               {question.title}
             </h2>
-            <p className="text-xs sm:text-sm text-stone-400 leading-relaxed">
+            <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
               {question.subtitle}
             </p>
           </div>
@@ -180,29 +216,29 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
                     onSelectOption(option.id);
                   }}
                   onMouseEnter={() => soundFx.playHover()}
-                  className={`group relative w-full text-left p-3.5 sm:p-4 rounded-xl border transition-all duration-200 flex items-start sm:items-center gap-3.5 sm:gap-4 select-none ${
-                    isSelected
-                      ? 'bg-amber-500/15 border-amber-500 shadow-md shadow-amber-500/10'
-                      : 'bg-stone-950/60 border-stone-800 hover:border-stone-600 hover:bg-stone-800/40'
-                  }`}
+                  className={`group quiz-option-card quiz-option-card--${idx} relative w-full text-left p-3.5 sm:p-4 rounded-xl border-2 transition-all duration-200 flex items-start sm:items-center gap-3.5 sm:gap-4 select-none ${isSelected ? 'is-selected' : ''}`}
                 >
                   {/* Hotkey Badge / Option Index */}
                   <div
                     className={`shrink-0 w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center font-mono font-bold text-xs transition-colors ${
                       isSelected
-                        ? 'bg-amber-500 text-stone-950'
-                        : 'bg-stone-900 text-stone-400 border border-stone-700/80 group-hover:border-stone-500 group-hover:text-stone-200'
+                        ? 'bg-[#5a408e] text-white'
+                        : 'bg-white/70 text-[#2f2745] border-2 border-[#2f2745] group-hover:bg-white'
                     }`}
                   >
                     {hotkeyLetter}
                   </div>
 
+                  <span className="quiz-option-emoji" aria-hidden="true">
+                    {OPTION_EMOJI[option.id] || '✨'}
+                  </span>
+
                   {/* Icon */}
                   <div
                     className={`shrink-0 p-2 rounded-lg transition-colors hidden xs:flex items-center justify-center ${
                       isSelected
-                        ? 'bg-amber-500/20 text-amber-300'
-                        : 'bg-stone-900/80 text-stone-400 group-hover:text-amber-300'
+                        ? 'bg-white/70 text-[#5a408e]'
+                        : 'bg-white/55 text-[#2f2745] group-hover:text-[#5a408e]'
                     }`}
                   >
                     <IconComponent className="w-4 h-4" />
@@ -214,20 +250,20 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
                       <span
                         className={`font-semibold text-sm sm:text-base transition-colors ${
                           isSelected
-                            ? 'text-amber-300'
-                            : 'text-stone-200 group-hover:text-stone-100'
+                            ? 'text-[#5a408e]'
+                            : 'text-[#2f2745] group-hover:text-[#1e1930]'
                         }`}
                       >
                         {option.label}
                       </span>
                       {option.badge && (
-                        <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-stone-800 text-stone-400 border border-stone-700/60 font-sans">
+                          <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-white/70 text-slate-600 border border-slate-300 font-sans">
                           {option.badge}
                         </span>
                       )}
                     </div>
                     {option.flavor && (
-                      <p className="text-xs text-stone-400 mt-1 leading-relaxed group-hover:text-stone-300 transition-colors">
+                      <p className="text-xs text-slate-600 mt-1 leading-relaxed group-hover:text-slate-800 transition-colors">
                         {option.flavor}
                       </p>
                     )}
@@ -238,8 +274,8 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
                     <ChevronRight
                       className={`w-4 h-4 transition-transform ${
                         isSelected
-                          ? 'text-amber-400 translate-x-0.5'
-                          : 'text-stone-600 group-hover:text-stone-400 group-hover:translate-x-0.5'
+                          ? 'text-[#5a408e] translate-x-0.5'
+                          : 'text-slate-500 group-hover:text-[#5a408e] group-hover:translate-x-0.5'
                       }`}
                     />
                   </div>
@@ -249,13 +285,13 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
           </div>
 
           {/* Bottom Keyboard Hint */}
-          <div className="mt-6 pt-4 border-t border-stone-800/60 flex items-center justify-between text-[11px] text-stone-400 font-sans">
+          <div className="mt-5 pt-4 border-t border-slate-200 flex items-center justify-between text-[11px] text-slate-500 font-sans">
             <span className="flex items-center gap-1">
-              <CornerDownLeft className="w-3 h-3 text-stone-400" />
+              <CornerDownLeft className="w-3 h-3 text-violet-700" />
               点击选项或按键盘快捷键 [A-E] 推进剧情
             </span>
             <span className="text-stone-400 hidden sm:inline font-mono">
-              ISEKAI DESTINY ENGINE
+              选一个，翻开下一页
             </span>
           </div>
         </motion.div>
